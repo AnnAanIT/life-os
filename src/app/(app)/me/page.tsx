@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LogoutButton } from '@/components/me/logout-button'
 import { ProfileForm } from '@/components/me/profile-form'
+import { ChangePasswordForm } from '@/components/me/change-password-form'
 import { LifeDesignCard } from '@/components/me/life-design-card'
 import { LifeWheelCard } from '@/components/me/life-wheel-card'
 
@@ -50,6 +51,7 @@ export default async function MePage() {
             energyStart={profile?.energy_peak_start  ?? null}
             energyEnd={profile?.energy_peak_end      ?? null}
           />
+          <ChangePasswordForm email={user.email!} />
           <LogoutButton />
         </div>
 

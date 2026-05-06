@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -76,12 +75,6 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-stone-500 mt-6">
-          Chưa có tài khoản?{' '}
-          <Link href="/auth/signup" className="text-stone-800 font-medium underline">
-            Đăng ký
-          </Link>
-        </p>
       </div>
     </div>
   )
