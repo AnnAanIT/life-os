@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { localDateStr } from '@/lib/format'
@@ -19,23 +19,41 @@ const QUALITY = [
   { value: 5, label: 'Rất tốt' },
 ]
 
+const HOURS   = Array.from({ length: 24 }, (_, i) => i)
+const MINUTES = [0, 15, 30, 45]
+
+function pad(n: number) { return String(n).padStart(2, '0') }
+
+function parseTimeStr(s: string | null | undefined): [number, number] | null {
+  if (!s) return null
+  const [h, m] = s.split(':').map(Number)
+  if (isNaN(h) || isNaN(m)) return null
+  const roundedM = Math.round(m / 15) * 15
+  return [h, roundedM >= 60 ? 45 : roundedM]
+}
+
 function calcDuration(bedtime: string, wakeTime: string): number {
   const [bh, bm] = bedtime.split(':').map(Number)
   const [wh, wm] = wakeTime.split(':').map(Number)
-  const bedMins  = bh * 60 + bm
-  let wakeMins = wh * 60 + wm
+  const bedMins = bh * 60 + bm
+  let wakeMins  = wh * 60 + wm
   if (wakeMins <= bedMins) wakeMins += 24 * 60
   return Math.round((wakeMins - bedMins) / 60 * 10) / 10
 }
 
 export function SleepLogCard({ userId, todayLog }: Props) {
-  const [bedtime,  setBedtime]  = useState(todayLog?.bedtime  ?? '')
-  const [wakeTime, setWakeTime] = useState(todayLog?.wake_time ?? '')
-  const [quality,  setQuality]  = useState<number | null>(todayLog?.quality ?? null)
-  const [saving,   setSaving]   = useState(false)
-  const bedRef  = useRef<HTMLInputElement>(null)
-  const wakeRef = useRef<HTMLInputElement>(null)
+  const parsedBed  = parseTimeStr(todayLog?.bedtime)
+  const parsedWake = parseTimeStr(todayLog?.wake_time)
 
+  const [bedH,    setBedH]    = useState<number | ''>(parsedBed  ? parsedBed[0]  : '')
+  const [bedM,    setBedM]    = useState<number>(parsedBed  ? parsedBed[1]  : 0)
+  const [wakeH,   setWakeH]   = useState<number | ''>(parsedWake ? parsedWake[0] : '')
+  const [wakeM,   setWakeM]   = useState<number>(parsedWake ? parsedWake[1] : 0)
+  const [quality, setQuality] = useState<number | null>(todayLog?.quality ?? null)
+  const [saving,  setSaving]  = useState(false)
+
+  const bedtime  = bedH  !== '' ? `${pad(bedH)}:${pad(bedM)}`   : null
+  const wakeTime = wakeH !== '' ? `${pad(wakeH)}:${pad(wakeM)}` : null
   const duration = bedtime && wakeTime ? calcDuration(bedtime, wakeTime) : null
 
   async function save(patch: Partial<{ bedtime: string; wake_time: string; quality: number }>) {
@@ -43,9 +61,9 @@ export function SleepLogCard({ userId, todayLog }: Props) {
     setSaving(true)
     const supabase = createClient()
     const next = {
-      bedtime:   patch.bedtime  ?? bedtime  ?? null,
+      bedtime:   patch.bedtime   ?? bedtime  ?? null,
       wake_time: patch.wake_time ?? wakeTime ?? null,
-      quality:   patch.quality  ?? quality  ?? null,
+      quality:   patch.quality   ?? quality  ?? null,
     }
     const dur = next.bedtime && next.wake_time
       ? calcDuration(next.bedtime, next.wake_time)
@@ -77,40 +95,88 @@ export function SleepLogCard({ userId, todayLog }: Props) {
         )}
       </div>
 
-      {/* Time pickers */}
+      {/* Time dropdowns */}
       <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => bedRef.current?.showPicker()}
-          className={cn(
-            'flex flex-col items-center gap-1 py-3 rounded-xl border transition-colors',
-            bedtime ? 'border-indigo-200 bg-indigo-50' : 'border-stone-100 hover:border-stone-200',
-          )}
-        >
+        {/* Bedtime */}
+        <div className={cn(
+          'flex flex-col gap-2 px-3 py-3 rounded-xl border transition-colors',
+          bedH !== '' ? 'border-indigo-200 bg-indigo-50' : 'border-stone-100',
+        )}>
           <span className="text-[10px] text-stone-400 uppercase tracking-wide">Giờ ngủ</span>
-          <span className={cn('text-lg font-semibold tabular-nums', bedtime ? 'text-indigo-600' : 'text-stone-300')}>
-            {bedtime || '--:--'}
-          </span>
-        </button>
-        <button
-          onClick={() => wakeRef.current?.showPicker()}
-          className={cn(
-            'flex flex-col items-center gap-1 py-3 rounded-xl border transition-colors',
-            wakeTime ? 'border-amber-200 bg-amber-50' : 'border-stone-100 hover:border-stone-200',
-          )}
-        >
-          <span className="text-[10px] text-stone-400 uppercase tracking-wide">Giờ thức</span>
-          <span className={cn('text-lg font-semibold tabular-nums', wakeTime ? 'text-amber-600' : 'text-stone-300')}>
-            {wakeTime || '--:--'}
-          </span>
-        </button>
-      </div>
+          <div className="flex items-center gap-1">
+            <select
+              value={bedH}
+              onChange={e => {
+                const h = Number(e.target.value)
+                setBedH(h)
+                save({ bedtime: `${pad(h)}:${pad(bedM)}` })
+              }}
+              className={cn(
+                'flex-1 min-w-0 text-base font-semibold tabular-nums bg-transparent outline-none cursor-pointer',
+                bedH !== '' ? 'text-indigo-600' : 'text-stone-300',
+              )}
+            >
+              <option value="">--</option>
+              {HOURS.map(h => <option key={h} value={h}>{pad(h)}</option>)}
+            </select>
+            <span className="text-stone-400 font-bold">:</span>
+            <select
+              value={bedM}
+              onChange={e => {
+                const m = Number(e.target.value)
+                setBedM(m)
+                if (bedH !== '') save({ bedtime: `${pad(bedH as number)}:${pad(m)}` })
+              }}
+              className={cn(
+                'flex-1 min-w-0 text-base font-semibold tabular-nums bg-transparent outline-none cursor-pointer',
+                bedH !== '' ? 'text-indigo-600' : 'text-stone-300',
+              )}
+            >
+              {MINUTES.map(m => <option key={m} value={m}>{pad(m)}</option>)}
+            </select>
+          </div>
+        </div>
 
-      <input ref={bedRef}  type="time" value={bedtime}
-        onChange={e => { setBedtime(e.target.value); save({ bedtime: e.target.value }) }}
-        className="sr-only" />
-      <input ref={wakeRef} type="time" value={wakeTime}
-        onChange={e => { setWakeTime(e.target.value); save({ wake_time: e.target.value }) }}
-        className="sr-only" />
+        {/* Wake time */}
+        <div className={cn(
+          'flex flex-col gap-2 px-3 py-3 rounded-xl border transition-colors',
+          wakeH !== '' ? 'border-amber-200 bg-amber-50' : 'border-stone-100',
+        )}>
+          <span className="text-[10px] text-stone-400 uppercase tracking-wide">Giờ thức</span>
+          <div className="flex items-center gap-1">
+            <select
+              value={wakeH}
+              onChange={e => {
+                const h = Number(e.target.value)
+                setWakeH(h)
+                save({ wake_time: `${pad(h)}:${pad(wakeM)}` })
+              }}
+              className={cn(
+                'flex-1 min-w-0 text-base font-semibold tabular-nums bg-transparent outline-none cursor-pointer',
+                wakeH !== '' ? 'text-amber-600' : 'text-stone-300',
+              )}
+            >
+              <option value="">--</option>
+              {HOURS.map(h => <option key={h} value={h}>{pad(h)}</option>)}
+            </select>
+            <span className="text-stone-400 font-bold">:</span>
+            <select
+              value={wakeM}
+              onChange={e => {
+                const m = Number(e.target.value)
+                setWakeM(m)
+                if (wakeH !== '') save({ wake_time: `${pad(wakeH as number)}:${pad(m)}` })
+              }}
+              className={cn(
+                'flex-1 min-w-0 text-base font-semibold tabular-nums bg-transparent outline-none cursor-pointer',
+                wakeH !== '' ? 'text-amber-600' : 'text-stone-300',
+              )}
+            >
+              {MINUTES.map(m => <option key={m} value={m}>{pad(m)}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* Quality */}
       <div>
