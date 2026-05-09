@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const { updates }: { updates: PriceUpdate[] } = await req.json()
   if (!updates?.length) return NextResponse.json({ ok: true })
 
-  await Promise.all(
+  const results = await Promise.all(
     updates.map(({ id, current_value, market_price_per_unit }) =>
       supabase
         .from('assets')
@@ -24,6 +24,9 @@ export async function POST(req: Request) {
         .eq('user_id', user.id)
     )
   )
+
+  const failed = results.filter(r => r.error).length
+  if (failed > 0) return NextResponse.json({ ok: false, failed }, { status: 500 })
 
   return NextResponse.json({ ok: true })
 }

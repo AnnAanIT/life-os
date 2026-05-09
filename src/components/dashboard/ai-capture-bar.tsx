@@ -49,32 +49,35 @@ export function AICaptureBar({ userId }: Props) {
     setSaving(true)
     const supabase = createClient()
     const today = new Date().toISOString().split('T')[0]
+    let error
 
     if (result.type === 'expense' || result.type === 'income') {
-      await supabase.from('transactions').insert({
+      ;({ error } = await supabase.from('transactions').insert({
         user_id: userId,
         date: today,
         type: result.type,
         amount: result.amount,
         category: result.type === 'expense' ? result.category : 'salary',
         note: result.description || null,
-      })
+      }))
     } else if (result.type === 'task') {
-      await supabase.from('tasks').insert({
+      ;({ error } = await supabase.from('tasks').insert({
         user_id: userId,
         title: result.title,
         is_mit: result.is_mit,
-      })
+      }))
     } else {
-      await supabase.from('inbox_items').insert({
+      ;({ error } = await supabase.from('inbox_items').insert({
         user_id: userId,
         content: result.content,
-      })
+      }))
     }
+
+    setSaving(false)
+    if (error) return
 
     setText('')
     setResult(null)
-    setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
     router.refresh()

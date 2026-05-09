@@ -37,27 +37,31 @@ export function HealthToday({ userId, today, waterGlasses, sleepLog }: Props) {
   const GOAL = 8
 
   async function addGlass() {
+    const prev = glasses
     const newCount = glasses + 1
     setGlasses(newCount)
     setUpdating(true)
     const supabase = createClient()
-    await supabase.from('water_logs').upsert(
+    const { error } = await supabase.from('water_logs').upsert(
       { user_id: userId, date: today, glasses: newCount },
       { onConflict: 'user_id,date' }
     )
+    if (error) setGlasses(prev)
     setUpdating(false)
     router.refresh()
   }
 
   async function removeGlass() {
     if (glasses <= 0) return
+    const prev = glasses
     const newCount = glasses - 1
     setGlasses(newCount)
     const supabase = createClient()
-    await supabase.from('water_logs').upsert(
+    const { error } = await supabase.from('water_logs').upsert(
       { user_id: userId, date: today, glasses: newCount },
       { onConflict: 'user_id,date' }
     )
+    if (error) setGlasses(prev)
     router.refresh()
   }
 
