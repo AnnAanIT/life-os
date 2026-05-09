@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { CaptureForm } from '@/components/capture/capture-form'
 import { InboxList } from '@/components/capture/inbox-list'
 
@@ -11,9 +10,7 @@ const TYPE_LABEL: Record<string, string> = {
 }
 
 export default async function CapturePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const { data: items } = await supabase
     .from('inbox_items')

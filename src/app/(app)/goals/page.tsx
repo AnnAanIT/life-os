@@ -1,12 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { GoalList } from '@/components/goals/goal-list'
 import { AddGoalForm } from '@/components/goals/add-goal-form'
 
 export default async function GoalsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const [
     { data: goals },

@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { AICaptureBar } from '@/components/dashboard/ai-capture-bar'
 import { DashboardGreeting } from '@/components/dashboard/greeting'
 import { MITPreview } from '@/components/dashboard/mit-preview'
@@ -10,9 +9,7 @@ import { ContextZone } from '@/components/dashboard/context-zone'
 import { localDateStr } from '@/lib/format'
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const today = localDateStr()
 

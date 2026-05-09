@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { BookShelf } from '@/components/learning/book-shelf'
 import { AddBookForm } from '@/components/learning/add-book-form'
 import { WantList } from '@/components/learning/want-list'
@@ -7,9 +6,7 @@ import { TakeawaysWall } from '@/components/learning/takeaways-wall'
 import { ReadingGoalBar } from '@/components/learning/reading-goal-bar'
 
 export default async function LearningPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const { data: profile } = await supabase
     .from('profiles')

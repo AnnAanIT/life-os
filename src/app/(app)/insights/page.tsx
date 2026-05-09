@@ -1,11 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { InsightsClient } from '@/components/insights/insights-client'
 
 export default async function InsightsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  await requireUser()
 
   return (
     <div className="px-4 pt-12 lg:px-8 lg:pt-8 pb-4 space-y-4">

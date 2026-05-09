@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { getUserCategories } from '@/lib/categories'
 import { TransactionList } from '@/components/transactions/transaction-list'
 import { BalanceCard } from '@/components/transactions/balance-card'
@@ -17,9 +16,7 @@ export default async function TransactionsPage({
 }: {
   searchParams: Promise<{ month?: string }>
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const { month: monthParam } = await searchParams
   const now = new Date()

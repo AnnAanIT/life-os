@@ -1,12 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { TaskList } from '@/components/tasks/task-list'
 import { AddTaskForm } from '@/components/tasks/add-task-form'
 
 export default async function TasksPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const [{ data: activeTasks }, { data: doneTasks }, { data: activeGoals }, { data: taskGoalLinks }] = await Promise.all([
     supabase

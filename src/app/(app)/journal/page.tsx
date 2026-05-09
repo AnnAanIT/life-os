@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { JournalForm } from '@/components/journal/journal-form'
 import { localDateStr, daysAgoStr } from '@/lib/format'
 
@@ -14,9 +13,7 @@ const MOOD_BG:    Record<number, string> = {
 const DAY_LABEL = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
 export default async function JournalPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const today = localDateStr()
   const sevenDaysAgo = daysAgoStr(6)

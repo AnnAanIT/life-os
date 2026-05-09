@@ -1,13 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { formatVND, localDateStr, localMonthRange } from '@/lib/format'
 import { TrendingUp, TrendingDown, Star, RotateCcw, Smile, BookOpen, Target } from 'lucide-react'
 import { WeeklyReflection } from '@/components/review/weekly-reflection'
 
 export default async function ReviewPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const today = new Date()
   const todayStr = localDateStr(today)

@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { InvestmentOverview } from '@/components/investments/investment-overview'
 import { NetWorthChart } from '@/components/investments/net-worth-chart'
 import { InvestmentForm } from '@/components/investments/investment-form'
@@ -7,9 +6,7 @@ import { InvestmentList } from '@/components/investments/investment-list'
 import { SavingsGoalsList } from '@/components/investments/savings-goals-list'
 
 export default async function InvestmentsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const [{ data: assets }, { data: savingsGoals }, { data: snapshots }, { data: transactions }] = await Promise.all([
     supabase

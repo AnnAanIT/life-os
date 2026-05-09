@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { LogoutButton } from '@/components/me/logout-button'
 import { ProfileForm } from '@/components/me/profile-form'
 import { ChangePasswordForm } from '@/components/me/change-password-form'
@@ -7,9 +6,7 @@ import { LifeDesignCard } from '@/components/me/life-design-card'
 import { LifeWheelCard } from '@/components/me/life-wheel-card'
 
 export default async function MePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const [{ data: profile }, { data: latestWheel }] = await Promise.all([
     supabase

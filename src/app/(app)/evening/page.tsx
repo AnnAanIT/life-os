@@ -1,12 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { localDateStr } from '@/lib/format'
 import { EveningFlow } from '@/components/evening/evening-flow'
 
 export default async function EveningPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const today = localDateStr()
 

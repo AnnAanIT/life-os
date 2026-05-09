@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { localDateStr } from '@/lib/format'
 import { SleepLogCard } from '@/components/health/sleep-log-card'
 import { NutritionCard } from '@/components/health/nutrition-card'
@@ -7,9 +6,7 @@ import { MovementLogCard } from '@/components/health/movement-log-card'
 import { RecoveryCard } from '@/components/health/recovery-card'
 
 export default async function HealthPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const today = localDateStr()
 

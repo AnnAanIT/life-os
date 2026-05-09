@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireUser } from '@/lib/auth'
 import { HabitsToday } from '@/components/habits/habits-today'
 import { AddHabitForm } from '@/components/habits/add-habit-form'
 import { localDateStr, daysAgoStr } from '@/lib/format'
@@ -19,9 +18,7 @@ function computeStreak(logs: string[], today: string): number {
 }
 
 export default async function HabitsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const { user, supabase } = await requireUser()
 
   const today     = localDateStr()
   const thirtyAgo = daysAgoStr(365)
