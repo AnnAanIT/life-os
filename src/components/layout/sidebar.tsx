@@ -6,7 +6,7 @@ import {
   Home, BarChart2, User, Plus, Sparkles,
   DollarSign, Landmark, RotateCcw, CheckSquare,
   TrendingUp, Heart, BookOpen, PenLine, Brain,
-  Zap,
+  Zap, Grid3X3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -111,6 +111,19 @@ export function Sidebar({ displayName, annualTheme, enabledModules }: Props) {
         >
           <Plus size={16} strokeWidth={2.5} />
           Ghi nhanh
+        </Link>
+        <Link
+          href="/modules"
+          className={cn(
+            'mt-1.5 flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all',
+            pathname.startsWith('/modules')
+              ? 'bg-white/10 text-white font-semibold'
+              : 'text-slate-400 hover:text-white hover:bg-white/5',
+          )}
+        >
+          <Grid3X3 size={15} strokeWidth={pathname.startsWith('/modules') ? 2.5 : 1.8}
+            className={pathname.startsWith('/modules') ? 'text-violet-400' : ''} />
+          Modules
         </Link>
         <Link
           href="/me"
