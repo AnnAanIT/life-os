@@ -10,38 +10,40 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const NAV_GROUPS = [
-  {
-    label: 'Chính',
-    items: [
-      { href: '/dashboard', icon: Home,     label: 'Hôm nay' },
-      { href: '/review',    icon: BarChart2, label: 'Review' },
-      { href: '/capture',   icon: Zap,       label: 'Quick Capture' },
-    ],
-  },
-  {
-    label: 'Cuộc sống',
-    items: [
-      { href: '/transactions', icon: DollarSign,  label: 'Tài chính' },
-      { href: '/investments',  icon: Landmark,    label: 'Đầu tư' },
-      { href: '/habits',       icon: RotateCcw,   label: 'Thói quen' },
-      { href: '/tasks',        icon: CheckSquare, label: 'Tasks' },
-      { href: '/goals',        icon: TrendingUp,  label: 'Mục tiêu' },
-      { href: '/health',       icon: Heart,       label: 'Sức khỏe' },
-      { href: '/learning',     icon: BookOpen,    label: 'Học tập' },
-      { href: '/journal',      icon: PenLine,     label: 'Nhật ký' },
-      { href: '/insights',     icon: Brain,       label: 'Insights' },
-    ],
-  },
+const CORE_ITEMS = [
+  { href: '/dashboard', icon: Home,     label: 'Hôm nay',       moduleId: null },
+  { href: '/review',    icon: BarChart2, label: 'Review',        moduleId: null },
+  { href: '/capture',   icon: Zap,       label: 'Quick Capture', moduleId: null },
+]
+
+const MODULE_ITEMS = [
+  { href: '/transactions', icon: DollarSign,  label: 'Tài chính',  moduleId: 'finance' },
+  { href: '/investments',  icon: Landmark,    label: 'Đầu tư',     moduleId: 'investments' },
+  { href: '/habits',       icon: RotateCcw,   label: 'Thói quen',  moduleId: 'habits' },
+  { href: '/tasks',        icon: CheckSquare, label: 'Tasks',      moduleId: 'tasks' },
+  { href: '/goals',        icon: TrendingUp,  label: 'Mục tiêu',   moduleId: 'goals' },
+  { href: '/health',       icon: Heart,       label: 'Sức khỏe',   moduleId: 'health' },
+  { href: '/learning',     icon: BookOpen,    label: 'Học tập',    moduleId: 'learning' },
+  { href: '/journal',      icon: PenLine,     label: 'Nhật ký',    moduleId: 'spirit' },
+  { href: '/insights',     icon: Brain,       label: 'Insights',   moduleId: 'insights' },
 ]
 
 interface Props {
-  displayName:  string
-  annualTheme?: string | null
+  displayName:    string
+  annualTheme?:   string | null
+  enabledModules: string[]
 }
 
-export function Sidebar({ displayName, annualTheme }: Props) {
+export function Sidebar({ displayName, annualTheme, enabledModules }: Props) {
   const pathname = usePathname()
+  const visibleModuleItems = MODULE_ITEMS.filter(
+    item => item.moduleId && enabledModules.includes(item.moduleId)
+  )
+
+  const navGroups = [
+    { label: 'Chính',    items: CORE_ITEMS },
+    { label: 'Cuộc sống', items: visibleModuleItems },
+  ]
 
   return (
     <aside className="hidden lg:flex flex-col w-60 bg-slate-900 h-screen sticky top-0 shrink-0">
@@ -68,7 +70,7 @@ export function Sidebar({ displayName, annualTheme }: Props) {
 
       {/* ── Nav ── */}
       <nav className="flex-1 px-3 pb-3 overflow-y-auto space-y-4">
-        {NAV_GROUPS.map(group => (
+        {navGroups.map(group => (
           <div key={group.label}>
             <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-widest px-2 mb-1">
               {group.label}
