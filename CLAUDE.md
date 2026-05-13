@@ -36,17 +36,17 @@ src/app/
     ├── transactions/page.tsx → tài chính (thu/chi/ngân sách)
     ├── investments/page.tsx  → đầu tư & tài sản & net worth
     ├── habits/page.tsx       → habit tracker
-    ├── health/page.tsx       → sức khỏe (ngủ/vận động/nước)
+    ├── health/page.tsx       → sức khỏe (ngủ/vận động/nước) + 7-day strip
     ├── goals/page.tsx        → mục tiêu OKR
     ├── tasks/page.tsx        → task list + MIT
     ├── capture/page.tsx      → quick capture / inbox
-    ├── evening/page.tsx      → evening ritual (5 bước)
+    ├── evening/page.tsx      → evening ritual (dynamic steps)
     ├── journal/page.tsx      → nhật ký hàng ngày
     ├── review/page.tsx       → weekly review
-    ├── insights/page.tsx     → AI insights (cached)
+    ├── insights/page.tsx     → AI insights (SSR stats + cached AI)
     ├── learning/page.tsx     → kệ sách cá nhân
-    ├── me/page.tsx           → profile + life design + life wheel
-    └── modules/page.tsx      → module navigation
+    ├── me/page.tsx           → profile + life design + life wheel + modules shortcut
+    └── modules/page.tsx      → bật/tắt modules + links tới Review & Evening
 ```
 
 ---
@@ -91,7 +91,7 @@ src/app/api/
 #### Core
 | Table | Mô tả | Columns đáng chú ý |
 |-------|-------|-------------------|
-| `profiles` | User profile | `display_name`, `annual_theme`, `purpose_statement`, `life_chapter`, `core_values text[]`, `energy_peak_start`, `energy_peak_end`, `reading_goal int default 12` |
+| `profiles` | User profile | `display_name`, `annual_theme`, `purpose_statement`, `life_chapter`, `core_values text[]`, `energy_peak_start`, `energy_peak_end`, `reading_goal int default 12`, **`enabled_modules text[]`** |
 | `happiness_scores` | Điểm hạnh phúc 1-10 | `score`, `note`, `date` (unique per user/day) |
 | `inbox_items` | Quick capture inbox | `content`, `classified_as`, `is_processed` |
 
@@ -156,31 +156,38 @@ src/app/api/
 ```
 src/components/
 ├── layout/
-│   ├── sidebar.tsx          → Dark sidebar (bg-slate-900), nav items
-│   └── bottom-nav.tsx       → Mobile bottom navigation
+│   ├── sidebar.tsx              → Dark sidebar (bg-slate-900), nav items, không có Modules link
+│   └── bottom-nav.tsx           → Mobile bottom nav (dynamic tabs theo enabled_modules)
 ├── dashboard/
-│   ├── greeting.tsx         → Welcome + energy check-in
-│   ├── ai-capture-bar.tsx   → Quick capture với AI classify
-│   ├── mit-preview.tsx      → 3 MIT hôm nay
-│   ├── habits-preview.tsx   → Habit tick preview
-│   ├── goals-preview.tsx    → Goals progress
-│   ├── health-summary.tsx   → Sleep/energy summary
+│   ├── greeting.tsx             → Welcome + stats summary
+│   ├── ai-capture-bar.tsx       → Quick capture với AI classify
+│   ├── finance-summary.tsx      → Card tài chính hôm nay + tháng (chỉ khi module finance bật)
+│   ├── mit-preview.tsx          → 3 MIT hôm nay
+│   ├── habits-preview.tsx       → Habit tick preview
+│   ├── goals-preview.tsx        → Goals progress
 │   ├── happiness-score-card.tsx → Điểm hạnh phúc 1-10
-│   ├── context-zone.tsx     → Zone tổng hợp
-│   └── evening-cta.tsx      → CTA kết thúc ngày (hiện sau 18h)
+│   ├── context-zone.tsx         → Zone tổng hợp (right col desktop)
+│   └── evening-cta.tsx          → CTA kết thúc ngày (hiện sau 18h)
+├── health/
+│   └── health-week-strip.tsx    → Strip 7 ngày: energy circle + sleep dots + movement dot
+├── evening/
+│   └── evening-flow.tsx         → 6-state machine, step counter dynamic (3 hoặc 4 steps)
+├── journal/
+│   └── journal-form.tsx         → activePeriod prop highlight buổi sáng/tối theo giờ
 ├── learning/
-│   ├── add-book-form.tsx    → Google Books search + manual fallback
-│   ├── book-shelf.tsx       → Tabs: đang đọc / đã đọc (với finish flow)
-│   ├── want-list.tsx        → Danh sách muốn đọc + nút Bắt đầu
-│   ├── takeaways-wall.tsx   → Key takeaway quotes từ sách đã đọc
-│   └── reading-goal-bar.tsx → Progress bar mục tiêu đọc sách/năm
+│   ├── add-book-form.tsx        → Google Books search + manual fallback
+│   ├── book-shelf.tsx           → Tabs: đang đọc / đã đọc (với finish flow)
+│   ├── want-list.tsx            → Danh sách muốn đọc + nút Bắt đầu
+│   ├── takeaways-wall.tsx       → Key takeaway quotes từ sách đã đọc
+│   └── reading-goal-bar.tsx     → Progress bar mục tiêu đọc sách/năm
 ├── insights/
-│   └── insights-client.tsx  → 2-col AI insights UI + cache status + refresh
+│   └── insights-client.tsx      → 2-col AI insights UI + cache status + refresh
 ├── investments/
-│   ├── investment-list.tsx  → Portfolio list + buy/sell inline
-│   ├── net-worth-chart.tsx  → Chart net worth theo thời gian
-│   └── savings-goals-list.tsx → Hũ tiết kiệm
-└── ... (các module khác)
+│   ├── investment-list.tsx      → Portfolio list + buy/sell inline
+│   ├── net-worth-chart.tsx      → Chart net worth theo thời gian
+│   └── savings-goals-list.tsx   → Hũ tiết kiệm
+└── modules/
+    └── modules-client.tsx       → Toggle modules + quick links tới Review & Evening
 ```
 
 ---
@@ -194,6 +201,7 @@ src/components/
 - **Font**: Geist (Next.js default)
 - **Spacing pattern trang**: `px-4 pt-12 lg:px-8 lg:pt-8 pb-4 space-y-4`
 - **2-col layout desktop**: `lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start`
+- **Mobile hover pattern**: `lg:opacity-0 lg:group-hover:opacity-100` — actions luôn hiện trên mobile, ẩn trên desktop cho đến khi hover
 
 ---
 
@@ -222,7 +230,7 @@ ANTHROPIC_API_KEY=
 
 ## Quyết định kiến trúc quan trọng
 
-### Module đã XÓA
+### Modules đã XÓA
 - **Relationships module** (`/relationships`) — đã xóa hoàn toàn. Bảng `contacts` vẫn tồn tại trong DB nhưng không có UI. Không rebuild lại trừ khi user yêu cầu.
 
 ### Patterns chuẩn
@@ -230,6 +238,62 @@ ANTHROPIC_API_KEY=
 - **Client components** dùng `router.refresh()` sau mutations (không dùng global state)
 - **Supabase client**: `@/lib/supabase/server` cho server components, `@/lib/supabase/client` cho client components
 - **Image optimization**: Dùng `next/image` (`<Image />`) thay `<img>` cho external images
+
+### Profile deduplication — `src/lib/get-profile.ts`
+Wrapper `React.cache()` quanh Supabase profile query. Layout và Page đều gọi `getProfile(user.id)` — lần 2 trở đi được dedup trong cùng render tree (per request). Không dùng inline `supabase.from('profiles')` nữa.
+
+```typescript
+import { cache } from 'react'
+export const getProfile = cache(async (userId: string) => { ... })
+```
+
+### Anthropic singleton
+Khai báo `const anthropic = new Anthropic()` ở **module level** trong tất cả AI routes (`classify`, `finance-insight`, `insights`). Tránh tạo instance mới mỗi request.
+
+### Module system — `enabled_modules text[]` trong `profiles`
+- Default khi null: tất cả 9 modules bật (`finance`, `investments`, `habits`, `tasks`, `goals`, `health`, `learning`, `spirit`, `insights`)
+- Dashboard dùng `const m = new Set(enabledModules)` → `m.has('finance')` để render conditional
+- DB queries trong `Promise.all` dùng `none = Promise.resolve({ data: null })` fallback cho module tắt
+- Layout truyền `enabledModules` xuống cả `Sidebar` và `BottomNav`
+
+### Bottom nav mobile — dynamic tabs
+Logic trong `bottom-nav.tsx`:
+```
+0 module bật  → [Modules hub]  [Review]
+1 module bật  → [module1]      [Review]
+2 module bật  → [module1]      [module2]   ← cả hai trực tiếp
+3+ module bật → [module1]      [All hub]   ← hub dẫn tới modules + Review
+```
+- Thứ tự ưu tiên module: finance → investments → habits → tasks → goals → health → learning → spirit → insights
+- Hub = `/modules` page (có quick links tới Review + Evening)
+- Quản lý modules (bật/tắt) → **Tôi → Cài đặt → Modules** (không phải sidebar)
+
+### Sidebar PC
+- Không còn link Modules (đã chuyển vào Tôi page)
+- Bottom section: **Ghi nhanh** (CTA) + **Hồ sơ** (link `/me`)
+- Nav groups: **Chính** (Dashboard, Review, Quick Capture) + **Cuộc sống** (modules đang bật)
+
+### Insights page — SSR stats + progressive AI
+- Stats (happiness, habits, finance, sleep, energy, movement, correlations) tính **server-side** trong `insights/page.tsx`
+- Truyền xuống `InsightsClient` qua `initialData` prop
+- Khi cache fresh (< 24h): render đầy đủ không cần client fetch
+- Khi cache stale: stats hiển thị ngay, AI section spinner riêng
+- `InsightsData`, `Stats`, `Insight` interfaces export từ `insights-client.tsx`
+
+### Dashboard — conditional FinanceSummary
+`FinanceSummary` component chỉ render khi `m.has('finance')`. Query `monthTransactions` trong `Promise.all` của dashboard chỉ chạy khi finance module bật.
+
+### Health page — 7-day strip
+`health/page.tsx` fetch thêm 3 queries parallel (sleep, movement, energy 7 ngày). `HealthWeekStrip` component hiển thị per-day: energy score circle (màu theo mức) + sleep quality dots (3 dots) + movement dot.
+
+### Evening flow — dynamic step counter
+```
+totalSteps = (hasHabits ? 1 : 0) + 1 + (hasPurpose ? 1 : 0) + 1
+```
+Steps: Habits (nếu có) → Happiness → Purpose alignment (nếu có) → MIT ngày mai. Tất cả steps đều hiển thị "Bước X / Y" nhất quán.
+
+### Journal — time-aware highlighting
+`JournalForm` nhận `activePeriod?: 'morning' | 'evening'`. Được tính tại server: `hour < 14 → 'morning'`. Section active có border màu nổi bật (amber cho sáng, indigo cho tối).
 
 ### Learning page — fallback strategy
 `learning/page.tsx` dùng 3-level fallback cho query sách:
@@ -241,6 +305,9 @@ ANTHROPIC_API_KEY=
 - TTL 24 giờ, lưu trong bảng `ai_insights_cache`
 - `?refresh=1` để force regenerate
 - Stats (không cần AI) luôn tính fresh mỗi lần load
+
+### Investments — fetch cooldown
+`investment-overview.tsx` có `COOLDOWN_MS = 15 * 60 * 1000`. Nút "Cập nhật giá" disabled trong 15 phút sau lần fetch gần nhất, tránh spam API.
 
 ---
 
