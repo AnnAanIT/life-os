@@ -16,10 +16,10 @@ function getTodayLabel() {
 interface Props {
   name:            string
   annualTheme?:    string | null
-  energyScore?:    number | null
-  habitsDone?:     number
-  habitsTotal?:    number
-  mitRemaining?:   number
+  energyScore?:    number | null  // undefined = module disabled; null = not logged yet
+  habitsDone?:     number | null  // undefined = module disabled
+  habitsTotal?:    number | null  // undefined = module disabled
+  mitRemaining?:   number | null  // undefined = module disabled
   happinessScore?: number | null
 }
 
@@ -27,9 +27,9 @@ export function DashboardGreeting({
   name,
   annualTheme,
   energyScore,
-  habitsDone = 0,
-  habitsTotal = 0,
-  mitRemaining = 0,
+  habitsDone,
+  habitsTotal,
+  mitRemaining,
   happinessScore,
 }: Props) {
   return (
@@ -54,25 +54,29 @@ export function DashboardGreeting({
 
       {/* ── Stat chips ── */}
       <div className="bg-white border-t border-violet-100 px-4 py-3 flex items-center divide-x divide-stone-100">
-        <StatChip
-          emoji="⚡"
-          value={energyScore ? `${energyScore}/5` : '—'}
-          label="Năng lượng"
-        />
-        {habitsTotal > 0 && (
+        {energyScore !== undefined && (
+          <StatChip
+            emoji="⚡"
+            value={energyScore != null ? `${energyScore}/5` : '—'}
+            label="Năng lượng"
+          />
+        )}
+        {habitsTotal !== undefined && habitsTotal != null && habitsTotal > 0 && (
           <StatChip
             emoji="✓"
-            value={`${habitsDone}/${habitsTotal}`}
+            value={`${habitsDone ?? 0}/${habitsTotal}`}
             label="Thói quen"
             highlight={habitsDone === habitsTotal}
           />
         )}
-        <StatChip
-          emoji="⭐"
-          value={mitRemaining === 0 ? 'Xong!' : `${mitRemaining} còn`}
-          label="MIT"
-          highlight={mitRemaining === 0}
-        />
+        {mitRemaining !== undefined && (
+          <StatChip
+            emoji="⭐"
+            value={mitRemaining === 0 ? 'Xong!' : `${mitRemaining ?? 0} còn`}
+            label="MIT"
+            highlight={mitRemaining === 0}
+          />
+        )}
         {happinessScore != null && (
           <StatChip
             emoji="😊"

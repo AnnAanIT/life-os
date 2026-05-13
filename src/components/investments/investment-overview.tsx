@@ -111,6 +111,8 @@ export function InvestmentOverview({ assets }: Props) {
   const router = useRouter()
   const [liveData, setLiveData]     = useState<LiveData | null>(null)
   const [liveStatus, setLiveStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
+  const [lastFetchAt, setLastFetchAt] = useState<number | null>(null)
+  const COOLDOWN_MS = 15 * 60 * 1000
 
   useEffect(() => {
     if (assets.length === 0) return
@@ -127,7 +129,10 @@ export function InvestmentOverview({ assets }: Props) {
       .catch(() => {})
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const isCoolingDown = lastFetchAt !== null && Date.now() - lastFetchAt < COOLDOWN_MS
+
   async function fetchLivePrices() {
+    if (isCoolingDown) return
     setLiveStatus('loading')
     setLiveData(null)
     try {
@@ -152,6 +157,7 @@ export function InvestmentOverview({ assets }: Props) {
       const data: LiveData = await res.json()
       setLiveData(data)
       setLiveStatus('ok')
+      setLastFetchAt(Date.now())
 
       const priceUpdates = data.results
         .filter(r => r.updated && r.currentPricePerUnit)
@@ -273,15 +279,16 @@ export function InvestmentOverview({ assets }: Props) {
           )}
           <button
             onClick={fetchLivePrices}
-            disabled={liveStatus === 'loading'}
+            disabled={liveStatus === 'loading' || isCoolingDown}
             className={cn(
               'flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all',
-              liveStatus === 'loading'
+              liveStatus === 'loading' || isCoolingDown
                 ? 'text-stone-500 cursor-not-allowed'
                 : liveStatus === 'ok'
                   ? 'bg-emerald-500/20 text-emerald-400 active:scale-95'
                   : 'bg-stone-700 text-stone-200 hover:bg-stone-600 active:scale-95'
             )}
+            title={isCoolingDown ? 'Chờ 15 phút giữa các lần cập nhật' : undefined}
           >
             {liveStatus === 'ok'
               ? <><RefreshCw size={10} /> Cập nhật</>

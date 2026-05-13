@@ -32,11 +32,13 @@ export function HabitsPreview({ habits, userId, today }: Props) {
     const isDone = localDone[habit.id]
     setLocalDone(prev => ({ ...prev, [habit.id]: !isDone }))
     const supabase = createClient()
+    let error
     if (isDone) {
-      await supabase.from('habit_logs').delete().eq('habit_id', habit.id).eq('user_id', userId).eq('date', today)
+      ;({ error } = await supabase.from('habit_logs').delete().eq('habit_id', habit.id).eq('user_id', userId).eq('date', today))
     } else {
-      await supabase.from('habit_logs').insert({ habit_id: habit.id, user_id: userId, date: today })
+      ;({ error } = await supabase.from('habit_logs').insert({ habit_id: habit.id, user_id: userId, date: today }))
     }
+    if (error) setLocalDone(prev => ({ ...prev, [habit.id]: isDone }))
     setToggling(null)
     router.refresh()
   }

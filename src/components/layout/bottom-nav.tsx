@@ -2,18 +2,43 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, BarChart2, User, Plus } from 'lucide-react'
+import { Home, BarChart2, User, Plus, Wallet, TrendingUp, RefreshCw, CheckSquare, Target, Heart, BookOpen, Smile, Lightbulb, LayoutGrid } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { LucideIcon } from 'lucide-react'
 
-const tabs = [
-  { href: '/dashboard', icon: Home,      label: 'Hôm nay' },
-  { href: '/modules',   icon: Grid3X3,   label: 'Modules' },
-  { href: '/review',    icon: BarChart2, label: 'Review' },
-  { href: '/me',        icon: User,      label: 'Tôi' },
+interface Tab { href: string; icon: LucideIcon; label: string }
+
+const MODULE_TABS: (Tab & { moduleId: string })[] = [
+  { moduleId: 'finance',     href: '/transactions', icon: Wallet,      label: 'Tài chính' },
+  { moduleId: 'investments', href: '/investments',  icon: TrendingUp,  label: 'Đầu tư' },
+  { moduleId: 'habits',      href: '/habits',       icon: RefreshCw,   label: 'Thói quen' },
+  { moduleId: 'tasks',       href: '/tasks',        icon: CheckSquare, label: 'Tasks' },
+  { moduleId: 'goals',       href: '/goals',        icon: Target,      label: 'Mục tiêu' },
+  { moduleId: 'health',      href: '/health',       icon: Heart,       label: 'Sức khỏe' },
+  { moduleId: 'learning',    href: '/learning',     icon: BookOpen,    label: 'Học tập' },
+  { moduleId: 'spirit',      href: '/journal',      icon: Smile,       label: 'Tinh thần' },
+  { moduleId: 'insights',    href: '/insights',     icon: Lightbulb,   label: 'Insights' },
 ]
 
-export function BottomNav() {
+const HUB_TAB:    Tab = { href: '/modules', icon: LayoutGrid, label: 'All' }
+const REVIEW_TAB: Tab = { href: '/review',  icon: BarChart2,  label: 'Review' }
+
+interface Props { enabledModules?: string[] }
+
+export function BottomNav({ enabledModules }: Props) {
   const pathname = usePathname()
+
+  const topModules = MODULE_TABS.filter(t => enabledModules?.includes(t.moduleId))
+  // 0 modules  → [Modules hub] [Review]
+  // 1 module   → [module1]     [Review]
+  // 2 modules  → [module1]     [module2]   (both fit directly)
+  // 3+ modules → [module1]     [All hub]   (hub links to others + Review)
+  const slot1: Tab = topModules[0] ?? HUB_TAB
+  const slot2: Tab = topModules.length === 2
+    ? topModules[1]
+    : topModules.length >= 3
+      ? HUB_TAB
+      : REVIEW_TAB
 
   return (
     <nav
@@ -24,9 +49,8 @@ export function BottomNav() {
       }}
     >
       <div className="flex items-center justify-around h-16 px-2">
-        {tabs.slice(0, 2).map(tab => (
-          <NavItem key={tab.href} tab={tab} active={pathname.startsWith(tab.href)} />
-        ))}
+        <NavItem tab={{ href: '/dashboard', icon: Home, label: 'Hôm nay' }} active={pathname.startsWith('/dashboard')} />
+        <NavItem tab={slot1} active={pathname.startsWith(slot1.href)} />
 
         <Link
           href="/capture"
@@ -35,15 +59,14 @@ export function BottomNav() {
           <Plus size={22} strokeWidth={2.5} />
         </Link>
 
-        {tabs.slice(2).map(tab => (
-          <NavItem key={tab.href} tab={tab} active={pathname.startsWith(tab.href)} />
-        ))}
+        <NavItem tab={slot2} active={pathname.startsWith(slot2.href)} />
+        <NavItem tab={{ href: '/me', icon: User, label: 'Tôi' }} active={pathname.startsWith('/me')} />
       </div>
     </nav>
   )
 }
 
-function NavItem({ tab, active }: { tab: typeof tabs[0]; active: boolean }) {
+function NavItem({ tab, active }: { tab: Tab; active: boolean }) {
   return (
     <Link
       href={tab.href}

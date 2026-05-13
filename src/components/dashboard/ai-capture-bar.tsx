@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sparkles, Check, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatVND } from '@/lib/format'
+import { formatVND, localDateStr } from '@/lib/format'
 
 type Classified =
   | { type: 'expense'; amount: number; category: string; description: string }
@@ -48,7 +48,7 @@ export function AICaptureBar({ userId }: Props) {
     if (!result) return
     setSaving(true)
     const supabase = createClient()
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateStr()
     let error
 
     if (result.type === 'expense' || result.type === 'income') {

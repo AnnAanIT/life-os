@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Flame, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Pencil, Trash2, Check, X, ArrowUp, ArrowDown, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { localDateStr } from '@/lib/format'
 
 const PRESET_ICONS = ['⚡', '💪', '📚', '🧘', '🏃', '💧', '😴', '🥗', '✍️', '🎯', '🧠', '❤️']
 
@@ -306,7 +307,7 @@ function HabitRow({
         const startD    = new Date(habit.startDate + 'T00:00:00')
         const endD      = new Date(habit.startDate + 'T00:00:00')
         endD.setDate(startD.getDate() + habit.challengeDays - 1)
-        const endStr    = endD.toISOString().split('T')[0]
+        const endStr    = localDateStr(endD)
         const todayD    = new Date(today + 'T00:00:00')
         const elapsed   = Math.min(Math.floor((todayD.getTime() - startD.getTime()) / 86400000) + 1, habit.challengeDays)
         const remaining = Math.max(0, Math.ceil((endD.getTime() - todayD.getTime()) / 86400000))

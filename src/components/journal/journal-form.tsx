@@ -19,6 +19,7 @@ interface Props {
   userId: string
   today: string
   existing: JournalEntry | null
+  activePeriod?: 'morning' | 'evening'
 }
 
 const MOODS = [
@@ -29,7 +30,7 @@ const MOODS = [
   { value: 5, emoji: '😄', label: 'Tuyệt vời' },
 ]
 
-export function JournalForm({ userId, today, existing }: Props) {
+export function JournalForm({ userId, today, existing, activePeriod }: Props) {
   const router = useRouter()
   const [gratitude, setGratitude] = useState(existing?.gratitude ?? '')
   const [morningFocus, setMorningFocus] = useState(existing?.morning_focus ?? '')
@@ -66,7 +67,10 @@ export function JournalForm({ userId, today, existing }: Props) {
   return (
     <div className="space-y-4">
       {/* Morning */}
-      <div className="bg-white rounded-2xl p-4 border border-stone-100 space-y-4">
+      <div className={cn(
+        'bg-white rounded-2xl p-4 border space-y-4 transition-colors',
+        activePeriod === 'morning' ? 'border-amber-200' : 'border-stone-100',
+      )}>
         <p className="text-xs font-semibold text-amber-500 uppercase tracking-wide">☀️ Buổi sáng</p>
         <Field
           label="Hôm nay tôi biết ơn điều gì?"
@@ -90,7 +94,10 @@ export function JournalForm({ userId, today, existing }: Props) {
       </div>
 
       {/* Evening */}
-      <div className="bg-white rounded-2xl p-4 border border-stone-100 space-y-4">
+      <div className={cn(
+        'bg-white rounded-2xl p-4 border space-y-4 transition-colors',
+        activePeriod === 'evening' ? 'border-indigo-200' : 'border-stone-100',
+      )}>
         <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">🌙 Buổi tối</p>
         <Field
           label="Điều tốt nhất hôm nay là gì?"

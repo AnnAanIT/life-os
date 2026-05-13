@@ -78,7 +78,7 @@ export function InboxList({ items, userId }: Props) {
             <p className="text-sm text-stone-700 leading-relaxed">{item.content}</p>
             <p className="text-xs text-stone-400 mt-1">{timeAgo(item.created_at)}</p>
           </div>
-          <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-1 shrink-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => markDone(item.id)}
               disabled={loading === item.id}

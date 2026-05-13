@@ -66,6 +66,11 @@ export function EveningFlow({
   const [alignment, setAlignment] = useState<string | null>(null)
   const hasPurpose = !!(purposeStatement || annualTheme)
 
+  const hasHabitsStep = habits.length > 0
+  const totalSteps    = (hasHabitsStep ? 1 : 0) + 1 + (hasPurpose ? 1 : 0) + 1
+  const happinessNum  = hasHabitsStep ? 2 : 1
+  const purposeNum    = happinessNum + 1
+
   // Step 4 — tomorrow MIT
   const [tomorrowMIT,  setTomorrowMIT]  = useState('')
   const [tomorrowGoal, setTomorrowGoal] = useState('')
@@ -147,7 +152,7 @@ export function EveningFlow({
   if (step === 1) return (
     <div className="space-y-5">
       <div>
-        <p className="text-xs text-stone-400 uppercase tracking-wide font-medium mb-0.5">Bước 1 / 3</p>
+        <p className="text-xs text-stone-400 uppercase tracking-wide font-medium mb-0.5">Bước 1 / {totalSteps}</p>
         <h2 className="text-xl font-semibold text-stone-800">Thói quen hôm nay</h2>
         <p className="text-stone-400 text-sm mt-0.5">Tick những thứ bạn đã làm.</p>
       </div>
@@ -186,7 +191,7 @@ export function EveningFlow({
   if (step === 2) return (
     <div className="space-y-5">
       <div>
-        <p className="text-xs text-stone-400 uppercase tracking-wide font-medium mb-0.5">Bước 2 / 3</p>
+        <p className="text-xs text-stone-400 uppercase tracking-wide font-medium mb-0.5">Bước {happinessNum} / {totalSteps}</p>
         <h2 className="text-xl font-semibold text-stone-800">Hôm nay thế nào?</h2>
         <p className="text-stone-400 text-sm mt-0.5">Không có câu trả lời đúng hay sai.</p>
       </div>
@@ -234,9 +239,10 @@ export function EveningFlow({
     </div>
   )
 
-  // ─── Step 3: Purpose Alignment (interstitial — no step counter) ────────
+  // ─── Step 3: Purpose Alignment ────────────────────────────────────────
   if (step === 3) return (
     <div className="space-y-8 py-4">
+      <p className="text-xs text-stone-400 uppercase tracking-wide font-medium">Bước {purposeNum} / {totalSteps}</p>
       {annualTheme && (
         <div className="inline-flex items-center gap-1.5 bg-stone-100 rounded-full px-3 py-1">
           <span className="text-xs text-stone-400">Năm nay ·</span>
@@ -282,7 +288,7 @@ export function EveningFlow({
   if (step === 4) return (
     <div className="space-y-5">
       <div>
-        <p className="text-xs text-stone-400 uppercase tracking-wide font-medium mb-0.5">Bước 3 / 3</p>
+        <p className="text-xs text-stone-400 uppercase tracking-wide font-medium mb-0.5">Bước {totalSteps} / {totalSteps}</p>
         <h2 className="text-xl font-semibold text-stone-800">Ngày mai</h2>
         <p className="text-stone-400 text-sm mt-0.5 italic">
           &ldquo;Nếu ngày mai chỉ làm được 1 việc, đó là gì?&rdquo;

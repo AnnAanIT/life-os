@@ -99,7 +99,7 @@ export function WantList({ books, userId }: Props) {
                   <button
                     onClick={() => deleteBook(book.id)}
                     disabled={loadingId === book.id}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 text-stone-300 hover:text-red-400 rounded-lg transition-all"
+                    className="lg:opacity-0 lg:group-hover:opacity-100 p-1.5 hover:bg-red-50 text-stone-300 hover:text-red-400 rounded-lg transition-all"
                   >
                     <Trash2 size={13} />
                   </button>

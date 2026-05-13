@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, Circle, Star, Trash2, RefreshCw, Pencil, Calendar, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { localDateStr } from '@/lib/format'
 
 type EnergyLevel = 'high' | 'medium' | 'low' | null
 type Recurrence  = 'daily' | 'weekly' | 'monthly' | null
@@ -63,7 +64,7 @@ function nextDueDate(current: string | null, recurrence: Recurrence): string {
   if (recurrence === 'daily')   base.setDate(base.getDate() + 1)
   if (recurrence === 'weekly')  base.setDate(base.getDate() + 7)
   if (recurrence === 'monthly') base.setMonth(base.getMonth() + 1)
-  return base.toISOString().split('T')[0]
+  return localDateStr(base)
 }
 
 export function TaskList({ tasks, userId, goals = [] }: Props) {
@@ -574,7 +575,7 @@ function TaskRow({
           'shrink-0 transition-colors',
           task.is_mit
             ? 'text-amber-500'
-            : 'text-stone-200 hover:text-amber-400 opacity-0 group-hover:opacity-100',
+            : 'text-stone-200 hover:text-amber-400 lg:opacity-0 lg:group-hover:opacity-100',
           !task.is_mit && !canAddMit && 'cursor-not-allowed',
         )}
       >
@@ -585,7 +586,7 @@ function TaskRow({
       <button
         onClick={() => setIsEditing(true)}
         disabled={loading === task.id}
-        className="shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-stone-100 text-stone-300 hover:text-stone-500 transition-all"
+        className="shrink-0 p-1 rounded-lg lg:opacity-0 lg:group-hover:opacity-100 hover:bg-stone-100 text-stone-300 hover:text-stone-500 transition-all"
       >
         <Pencil size={14} />
       </button>
@@ -594,7 +595,7 @@ function TaskRow({
       <button
         onClick={() => onDelete(task.id)}
         disabled={loading === task.id}
-        className="shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 text-stone-300 hover:text-red-400 transition-all"
+        className="shrink-0 p-1 rounded-lg lg:opacity-0 lg:group-hover:opacity-100 hover:bg-red-50 text-stone-300 hover:text-red-400 transition-all"
       >
         <Trash2 size={14} />
       </button>

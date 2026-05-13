@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { localDateStr } from '@/lib/format'
 
 interface Props {
   userId: string
@@ -33,7 +34,7 @@ export function HappinessScoreCard({ userId, todayScore }: Props) {
     setSelected(score)
     setSaving(true)
     const supabase = createClient()
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateStr()
     await supabase
       .from('happiness_scores')
       .upsert({ user_id: userId, score, date: today }, { onConflict: 'user_id,date' })

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { Plus, Search, Loader2, X } from 'lucide-react'
+import { localDateStr } from '@/lib/format'
 
 interface GoogleBook {
   id: string
@@ -117,7 +118,7 @@ export function AddBookForm({ userId }: Props) {
       author:     author.trim() || null,
       cover_url:  selected?.cover ?? null,
       status,
-      finished_at: status === 'done' ? new Date().toISOString().split('T')[0] : null,
+      finished_at: status === 'done' ? localDateStr() : null,
     })
 
     if (error?.code === '42703') {
@@ -127,7 +128,7 @@ export function AddBookForm({ userId }: Props) {
         title:      title.trim(),
         author:     author.trim() || null,
         status,
-        finished_at: status === 'done' ? new Date().toISOString().split('T')[0] : null,
+        finished_at: status === 'done' ? localDateStr() : null,
       })
       error = retry.error
     }

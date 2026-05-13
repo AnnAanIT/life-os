@@ -27,9 +27,11 @@ export function MITPreview({ tasks, userId }: Props) {
 
   async function toggleDone(task: Task) {
     setToggling(task.id)
-    setLocalDone(prev => ({ ...prev, [task.id]: !prev[task.id] }))
+    const prev = localDone[task.id]
+    setLocalDone(cur => ({ ...cur, [task.id]: !prev }))
     const supabase = createClient()
-    await supabase.from('tasks').update({ is_done: !task.is_done }).eq('id', task.id).eq('user_id', userId)
+    const { error } = await supabase.from('tasks').update({ is_done: !prev }).eq('id', task.id).eq('user_id', userId)
+    if (error) setLocalDone(cur => ({ ...cur, [task.id]: prev }))
     setToggling(null)
     router.refresh()
   }

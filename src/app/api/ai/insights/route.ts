@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+const anthropic = new Anthropic()
+
 const CACHE_TTL_HOURS = 24
 
 export async function GET(req: Request) {
@@ -130,8 +132,7 @@ export async function GET(req: Request) {
 
   // ── 3. Call AI ────────────────────────────────────────────────────────────
   try {
-    const client = new Anthropic()
-    const message = await client.messages.create({
+    const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       messages: [{

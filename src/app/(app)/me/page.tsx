@@ -4,6 +4,8 @@ import { ProfileForm } from '@/components/me/profile-form'
 import { ChangePasswordForm } from '@/components/me/change-password-form'
 import { LifeDesignCard } from '@/components/me/life-design-card'
 import { LifeWheelCard } from '@/components/me/life-wheel-card'
+import Link from 'next/link'
+import { LayoutGrid, ChevronRight } from 'lucide-react'
 
 export default async function MePage() {
   const { user, supabase } = await requireUser()
@@ -48,8 +50,28 @@ export default async function MePage() {
             energyStart={profile?.energy_peak_start  ?? null}
             energyEnd={profile?.energy_peak_end      ?? null}
           />
-          <ChangePasswordForm email={user.email!} />
-          <LogoutButton />
+          <div className="pt-1">
+            <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-3">Cài đặt</p>
+            <div className="space-y-3">
+              <Link
+                href="/modules"
+                className="flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 border border-stone-100 hover:border-stone-200 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center">
+                    <LayoutGrid size={16} className="text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-stone-700">Modules</p>
+                    <p className="text-xs text-stone-400">Bật / tắt tính năng</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-stone-300" />
+              </Link>
+              <ChangePasswordForm email={user.email!} />
+              <LogoutButton />
+            </div>
+          </div>
         </div>
 
         {/* Right: Life Wheel */}

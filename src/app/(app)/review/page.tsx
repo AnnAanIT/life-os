@@ -1,4 +1,5 @@
 import { requireUser } from '@/lib/auth'
+import { getProfile } from '@/lib/get-profile'
 import { formatVND, localDateStr, localMonthRange } from '@/lib/format'
 import { TrendingUp, TrendingDown, Star, RotateCcw, Smile, BookOpen, Target } from 'lucide-react'
 import { WeeklyReflection } from '@/components/review/weekly-reflection'
@@ -31,7 +32,7 @@ export default async function ReviewPage() {
     { data: weekEnergyLogs },
     { data: weekSleepLogs },
     { data: weeklyReview },
-    { data: reviewProfile },
+    reviewProfile,
   ] = await Promise.all([
     supabase.from('happiness_scores').select('score').eq('user_id', user.id).gte('date', weekStartStr).lte('date', todayStr),
     supabase.from('transactions').select('amount, type').eq('user_id', user.id).gte('date', weekStartStr).lte('date', todayStr),
@@ -47,7 +48,7 @@ export default async function ReviewPage() {
     supabase.from('sleep_logs').select('duration_hours').eq('user_id', user.id).gte('date', weekStartStr).lte('date', todayStr),
     supabase.from('weekly_reviews').select('best_thing, carry_forward, next_priority, theme_moment')
       .eq('user_id', user.id).eq('week_start', weekStartStr).single(),
-    supabase.from('profiles').select('annual_theme').eq('id', user.id).single(),
+    getProfile(user.id),
   ])
 
   const avgHappinessWeek = weekHappiness?.length
@@ -129,6 +130,7 @@ export default async function ReviewPage() {
                 value={avgHappinessWeek ?? '—'}
                 unit={avgHappinessWeek ? '/10' : ''}
                 sub={`${weekHappiness?.length ?? 0} ngày ghi`}
+                highlight={!!avgHappinessWeek}
               />
               <StatCard
                 icon={<RotateCcw size={15} className="text-blue-500" />}
@@ -209,6 +211,7 @@ export default async function ReviewPage() {
               value={avgHappinessMonth ?? '—'}
               unit={avgHappinessMonth ? '/10' : ''}
               sub={`${monthHappiness?.length ?? 0} ngày ghi`}
+              highlight={!!avgHappinessMonth}
             />
             <StatCard
               icon={<RotateCcw size={15} className="text-blue-500" />}
@@ -269,16 +272,16 @@ export default async function ReviewPage() {
   )
 }
 
-function StatCard({ icon, label, value, unit, sub }: {
-  icon: React.ReactNode; label: string; value: string; unit: string; sub: string
+function StatCard({ icon, label, value, unit, sub, highlight }: {
+  icon: React.ReactNode; label: string; value: string; unit: string; sub: string; highlight?: boolean
 }) {
   return (
-    <div className="bg-white rounded-2xl p-4 border border-stone-100">
+    <div className={highlight ? 'bg-amber-50 rounded-2xl p-4 border border-amber-100' : 'bg-white rounded-2xl p-4 border border-stone-100'}>
       <div className="flex items-center gap-1.5 mb-2">
         {icon}
         <p className="text-xs text-stone-400">{label}</p>
       </div>
-      <p className="text-2xl font-bold text-stone-800">
+      <p className={highlight ? 'text-2xl font-bold text-amber-700' : 'text-2xl font-bold text-stone-800'}>
         {value}
         {unit && <span className="text-sm font-normal text-stone-400 ml-0.5">{unit}</span>}
       </p>

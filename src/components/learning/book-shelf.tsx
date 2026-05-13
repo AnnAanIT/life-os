@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { Trash2, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { localDateStr } from '@/lib/format'
 
 interface Book {
   id: string
@@ -56,7 +57,7 @@ export function BookShelf({ books, userId, visibleStatuses, defaultTab }: Props)
     const supabase = createClient()
     await supabase.from('books').update({
       status: newStatus,
-      finished_at: newStatus === 'done' ? new Date().toISOString().split('T')[0] : null,
+      finished_at: newStatus === 'done' ? localDateStr() : null,
     }).eq('id', book.id).eq('user_id', userId)
     router.refresh()
   }
@@ -72,7 +73,7 @@ export function BookShelf({ books, userId, visibleStatuses, defaultTab }: Props)
     const supabase = createClient()
     const { error } = await supabase.from('books').update({
       status:       'done',
-      finished_at:  new Date().toISOString().split('T')[0],
+      finished_at:  localDateStr(),
       key_takeaway: finishNote.trim() || null,
       rating:       finishRating || null,
     }).eq('id', bookId).eq('user_id', userId)
@@ -189,7 +190,7 @@ export function BookShelf({ books, userId, visibleStatuses, defaultTab }: Props)
                   )}
                   <button
                     onClick={() => deleteBook(book.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 text-stone-300 hover:text-red-400 rounded-lg transition-all"
+                    className="lg:opacity-0 lg:group-hover:opacity-100 p-1 hover:bg-red-50 text-stone-300 hover:text-red-400 rounded-lg transition-all"
                   >
                     <Trash2 size={13} />
                   </button>

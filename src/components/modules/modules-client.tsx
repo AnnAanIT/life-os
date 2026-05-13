@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   DollarSign, CheckSquare, RotateCcw, TrendingUp,
   BookOpen, Heart, Sparkles, Landmark, Brain,
+  BarChart2, Moon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -60,6 +61,30 @@ export function ModulesClient({ userId, initialEnabled }: Props) {
             {saving && <span className="ml-2 text-xs text-violet-500">Đang lưu...</span>}
           </p>
         </div>
+      </div>
+
+      {/* System links */}
+      <div className="flex gap-2 mb-4">
+        <Link
+          href="/review"
+          className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-stone-100 hover:border-stone-200 transition-colors"
+        >
+          <BarChart2 size={16} className="text-violet-500" />
+          <div>
+            <p className="text-xs font-semibold text-stone-700">Review</p>
+            <p className="text-[10px] text-stone-400">Nhìn lại & điều chỉnh</p>
+          </div>
+        </Link>
+        <Link
+          href="/evening"
+          className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 border border-stone-100 hover:border-stone-200 transition-colors"
+        >
+          <Moon size={16} className="text-indigo-400" />
+          <div>
+            <p className="text-xs font-semibold text-stone-700">Buổi tối</p>
+            <p className="text-[10px] text-stone-400">Kết thúc ngày</p>
+          </div>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">

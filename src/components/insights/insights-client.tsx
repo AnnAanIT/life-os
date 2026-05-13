@@ -5,13 +5,13 @@ import { Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatVND } from '@/lib/format'
 
-interface Insight {
+export interface Insight {
   title: string
   body: string
   type: 'positive' | 'tip' | 'neutral'
 }
 
-interface Stats {
+export interface Stats {
   happiness: { average: number | null; entries: number }
   habits: { totalHabits: number; completionRate: number | null }
   finance: { totalSpend: number; totalIncome: number }
@@ -28,7 +28,7 @@ interface Stats {
   }
 }
 
-interface InsightsData {
+export interface InsightsData {
   monthly_story: string | null
   insights: Insight[]
   stats: Stats
@@ -36,26 +36,41 @@ interface InsightsData {
   generated_at: string | null
 }
 
-export function InsightsClient() {
-  const [data, setData]       = useState<InsightsData | null>(null)
-  const [loading, setLoading] = useState(true)
+interface Props {
+  initialData: InsightsData | null
+}
+
+export function InsightsClient({ initialData }: Props) {
+  const [data, setData]           = useState<InsightsData | null>(initialData)
+  const [loadingAI, setLoadingAI] = useState(!initialData?.cached)
   const [refreshing, setRefreshing] = useState(false)
-  const [error, setError]     = useState(false)
+  const [error, setError]         = useState(false)
+
+  useEffect(() => {
+    if (!initialData?.cached) load()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function load(refresh = false) {
     if (refresh) setRefreshing(true)
-    else setLoading(true)
+    else setLoadingAI(true)
     setError(false)
     fetch(refresh ? '/api/ai/insights?refresh=1' : '/api/ai/insights')
       .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); setRefreshing(false) })
-      .catch(() => { setError(true); setLoading(false); setRefreshing(false) })
+      .then(d => { setData(d); setLoadingAI(false); setRefreshing(false) })
+      .catch(() => { setError(true); setLoadingAI(false); setRefreshing(false) })
   }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load() }, [])
+  // No SSR data and AI load failed
+  if (error && !data) {
+    return (
+      <div className="text-center py-10 text-stone-400">
+        <p className="text-sm">Không thể tải insights. Thêm API key hoặc thử lại.</p>
+      </div>
+    )
+  }
 
-  if (loading) {
+  // No SSR data and still loading AI
+  if (!data && loadingAI) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
         <Loader2 size={24} className="animate-spin text-stone-400" />
@@ -64,13 +79,7 @@ export function InsightsClient() {
     )
   }
 
-  if (error || !data) {
-    return (
-      <div className="text-center py-10 text-stone-400">
-        <p className="text-sm">Không thể tải insights. Thêm API key hoặc thử lại.</p>
-      </div>
-    )
-  }
+  if (!data) return null
 
   const { monthly_story, insights, stats, cached, generated_at } = data
 
@@ -83,11 +92,11 @@ export function InsightsClient() {
       {/* Cache status bar */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-stone-400">
-          {cached && generatedLabel ? `Phân tích lúc ${generatedLabel}` : 'Vừa phân tích xong'}
+          {loadingAI ? 'Đang phân tích...' : cached && generatedLabel ? `Phân tích lúc ${generatedLabel}` : 'Vừa phân tích xong'}
         </p>
         <button
           onClick={() => load(true)}
-          disabled={refreshing}
+          disabled={refreshing || loadingAI}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-all disabled:opacity-40"
         >
           <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
@@ -99,12 +108,17 @@ export function InsightsClient() {
 
       {/* ── Left col: story + stats ── */}
       <div className="space-y-4">
-        {monthly_story && (
+        {loadingAI ? (
+          <div className="bg-gradient-to-br from-violet-600 via-violet-500 to-purple-500 rounded-2xl p-5 text-white flex items-center gap-3">
+            <Loader2 size={16} className="animate-spin text-violet-200 shrink-0" />
+            <p className="text-sm text-white/80">Claude đang phân tích dữ liệu của bạn...</p>
+          </div>
+        ) : monthly_story ? (
           <div className="bg-gradient-to-br from-violet-600 via-violet-500 to-purple-500 rounded-2xl p-5 text-white">
             <p className="text-[10px] font-semibold text-violet-200 uppercase tracking-widest mb-2">✨ Tháng này của bạn</p>
             <p className="text-sm leading-relaxed text-white/90">{monthly_story}</p>
           </div>
-        )}
+        ) : null}
 
         <div className="grid grid-cols-2 gap-2">
           <StatCard
@@ -181,7 +195,12 @@ export function InsightsClient() {
           )}
         </div>
 
-        {insights.length > 0 ? (
+        {loadingAI ? (
+          <div className="bg-stone-50 rounded-2xl p-6 border border-stone-200 text-center">
+            <Loader2 size={16} className="animate-spin text-stone-400 mx-auto mb-2" />
+            <p className="text-sm text-stone-400">Đang tìm pattern...</p>
+          </div>
+        ) : insights.length > 0 ? (
           <div className="space-y-2">
             <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest">Pattern phát hiện</p>
             {insights.map((insight, i) => (

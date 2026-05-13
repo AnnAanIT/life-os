@@ -1,4 +1,5 @@
 import { requireUser } from '@/lib/auth'
+import { getProfile } from '@/lib/get-profile'
 import { localDateStr } from '@/lib/format'
 import { EveningFlow } from '@/components/evening/evening-flow'
 
@@ -8,13 +9,13 @@ export default async function EveningPage() {
   const today = localDateStr()
 
   const [
-    { data: profile },
+    profile,
     { data: habits },
     { data: habitLogs },
     { data: todayScore },
     { data: activeGoals },
   ] = await Promise.all([
-    supabase.from('profiles').select('display_name, purpose_statement, annual_theme').eq('id', user.id).single(),
+    getProfile(user.id),
     supabase.from('habits').select('id, name, icon')
       .eq('user_id', user.id).eq('is_active', true)
       .lte('start_date', today)

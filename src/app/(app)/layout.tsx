@@ -1,6 +1,7 @@
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { Sidebar } from '@/components/layout/sidebar'
 import { createClient } from '@/lib/supabase/server'
+import { getProfile } from '@/lib/get-profile'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -15,11 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   ]
 
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('display_name, annual_theme, enabled_modules')
-      .eq('id', user.id)
-      .single()
+    const profile = await getProfile(user.id)
     displayName = profile?.display_name ?? user.email?.split('@')[0] ?? 'bạn'
     annualTheme = profile?.annual_theme ?? null
     if (profile?.enabled_modules) enabledModules = profile.enabled_modules
@@ -33,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main className="pb-24 lg:pb-10">
           {children}
         </main>
-        <BottomNav />
+        <BottomNav enabledModules={enabledModules} />
       </div>
     </div>
   )

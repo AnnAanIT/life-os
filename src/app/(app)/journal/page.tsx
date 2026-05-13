@@ -16,6 +16,8 @@ export default async function JournalPage() {
   const { user, supabase } = await requireUser()
 
   const today = localDateStr()
+  const hour = new Date().getHours()
+  const activePeriod: 'morning' | 'evening' = hour < 14 ? 'morning' : 'evening'
   const sevenDaysAgo = daysAgoStr(6)
 
   const [{ data: todayEntry }, { data: recentEntries }] = await Promise.all([
@@ -72,7 +74,7 @@ export default async function JournalPage() {
         </div>
       </div>
 
-      <JournalForm userId={user.id} today={today} existing={todayEntry ?? null} />
+      <JournalForm userId={user.id} today={today} existing={todayEntry ?? null} activePeriod={activePeriod} />
     </div>
   )
 }

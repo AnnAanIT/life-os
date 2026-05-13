@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+
+const anthropic = new Anthropic()
 import { createClient } from '@/lib/supabase/server'
 import { getUserCategories, expenseCategories, incomeCategories } from '@/lib/categories'
 
@@ -50,8 +52,7 @@ Format examples:
 "họp 3h chiều"      → {"type":"task","title":"Họp 3h chiều","is_mit":false}`
 
   try {
-    const client = new Anthropic()
-    const message = await client.messages.create({
+    const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 150,
       system: systemPrompt,

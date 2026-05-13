@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { localMonthRange, localDateStr } from '@/lib/format'
 
+const anthropic = new Anthropic()
+
 const CATEGORY_LABELS: Record<string, string> = {
   food: 'ăn uống', transport: 'di chuyển', shopping: 'mua sắm',
   entertainment: 'giải trí', health: 'sức khỏe', education: 'học tập',
@@ -60,8 +62,7 @@ export async function GET() {
       cur.income > 0 ? `Tiết kiệm hiện tại: ${cur.savings.toLocaleString('vi-VN')}₫.` : '',
     ].filter(Boolean).join(' ')
 
-    const client = new Anthropic()
-    const message = await client.messages.create({
+    const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 120,
       system: 'Bạn là trợ lý tài chính thân thiện. Viết 1-2 câu nhận xét ngắn gọn, ấm áp bằng tiếng Việt thuần. Không dùng markdown, không liệt kê số liệu, không dùng emoji. Tập trung vào 1 điểm quan trọng nhất và đưa ra gợi ý nhẹ nhàng nếu cần. Giọng điệu như người bạn, không phải chuyên gia.',

@@ -21,7 +21,7 @@ export default async function HabitsPage() {
   const { user, supabase } = await requireUser()
 
   const today     = localDateStr()
-  const thirtyAgo = daysAgoStr(365)
+  const thirtyAgo = daysAgoStr(90)
 
   const [{ data: habits }, { data: recentLogs }, { data: activeGoals }] = await Promise.all([
     supabase

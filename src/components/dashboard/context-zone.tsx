@@ -17,18 +17,21 @@ interface GoalSummary {
 }
 
 interface Props {
-  userId:      string
-  todayScore:  { score: number; note: string | null } | null
-  energyLog:   { score: number | null; factors: string[] } | null
-  sleepLog:    { duration_hours: number | null; quality: number | null } | null
-  movementLog: { did_move: boolean | null; stress_level: number | null } | null
-  goals:       GoalSummary[]
-  inboxCount:  number
+  userId:         string
+  todayScore:     { score: number; note: string | null } | null
+  energyLog:      { score: number | null; factors: string[] } | null
+  sleepLog:       { duration_hours: number | null; quality: number | null } | null
+  movementLog:    { did_move: boolean | null; stress_level: number | null } | null
+  goals:          GoalSummary[]
+  inboxCount:     number
+  enabledModules: string[]
 }
 
 export function ContextZone({
-  userId, todayScore, energyLog, sleepLog, movementLog, goals, inboxCount,
+  userId, todayScore, energyLog, sleepLog, movementLog, goals, inboxCount, enabledModules,
 }: Props) {
+  const showHealth = enabledModules.includes('health')
+  const showGoals  = enabledModules.includes('goals')
   const [open, setOpen] = useState(false)
 
   const summaryParts = [
@@ -42,7 +45,7 @@ export function ContextZone({
 
   const summaryText = summaryParts.length > 0
     ? summaryParts.join(' · ')
-    : 'Sức khỏe · Mục tiêu · Hạnh phúc'
+    : 'Nhấn để xem tổng quan'
 
   return (
     <div className="space-y-2">
@@ -58,12 +61,14 @@ export function ContextZone({
       </button>
 
       <div className={`space-y-2 ${open ? 'block' : 'hidden'} lg:block`}>
-        <HealthSummary
-          energyLog={energyLog}
-          sleepLog={sleepLog}
-          movementLog={movementLog}
-        />
-        <GoalsPreview goals={goals} />
+        {showHealth && (
+          <HealthSummary
+            energyLog={energyLog}
+            sleepLog={sleepLog}
+            movementLog={movementLog}
+          />
+        )}
+        {showGoals && <GoalsPreview goals={goals} />}
         <HappinessScoreCard userId={userId} todayScore={todayScore} />
         {inboxCount > 0 && (
           <Link
