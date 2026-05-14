@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Loader2, Sparkles } from 'lucide-react'
 import {
   solarToLunarFromDate, formatLunarDate,
   getDaySummary, getYearCanChi,
@@ -33,6 +33,35 @@ export function TuViTab({ birthDate, birthHour }: Props) {
   const lunar   = useMemo(() => solarToLunarFromDate(today), [today])
   const summary = useMemo(() => getDaySummary(today), [today])
   const yearCC  = useMemo(() => getYearCanChi(today.getFullYear()), [today])
+
+  const [aiReading, setAiReading] = useState<string | null>(null)
+  const [aiLoading, setAiLoading] = useState(true)
+
+  useEffect(() => {
+    const params = new URLSearchParams({
+      lunarDate:  formatLunarDate(lunar),
+      dayCanChi:  summary.canChi.full,
+      yearCanChi: yearCC.full,
+      quality:    summary.quality.quality,
+      luckyHours: summary.luckyHours.map(h => `${h.chi} (${h.label})`).join(', '),
+    })
+    if (birthDate) {
+      const yy = parseInt(birthDate.split('-')[0], 10)
+      const z = getZodiacByYear(yy)
+      if (z) {
+        params.set('birthYear', String(yy))
+        params.set('zodiacName', z.nameVi)
+        const rel = getZodiacRelation(yy, today.getFullYear())
+        if (rel) params.set('zodiacRelation', rel.description)
+      }
+    }
+    fetch(`/api/wisdom/daily?${params}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.content) setAiReading(d.content) })
+      .catch(() => {})
+      .finally(() => setAiLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Find the chi-hour label for birth_hour (stored as slot start: 23,1,3,...21)
   const birthHourEntry = useMemo(
@@ -91,6 +120,24 @@ export function TuViTab({ birthDate, birthHour }: Props) {
           </div>
         )}
       </div>
+
+      {/* AI Daily Reading */}
+      {(aiLoading || aiReading) && (
+        <div className="bg-white rounded-2xl p-4 border border-stone-100">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Sparkles size={12} className="text-violet-400" />
+            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">Nhận định hôm nay</p>
+          </div>
+          {aiLoading ? (
+            <div className="flex items-center gap-2 py-1">
+              <Loader2 size={14} className="text-stone-300 animate-spin" />
+              <p className="text-xs text-stone-400">Đang phân tích ngày...</p>
+            </div>
+          ) : (
+            <p className="text-sm text-stone-700 leading-relaxed">{aiReading}</p>
+          )}
+        </div>
+      )}
 
       {/* Thông tin cá nhân */}
       {birth?.zodiac ? (

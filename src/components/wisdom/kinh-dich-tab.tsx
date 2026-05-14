@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, BookOpen, ChevronDown, Save } from 'lucide-react'
+import { Sparkles, BookOpen, ChevronDown, Save, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { drawHexagramByCoins, HEXAGRAMS } from '@/lib/wisdom'
+import { drawHexagramByCoins, HEXAGRAMS, getDaySummary, solarToLunarFromDate, formatLunarDate } from '@/lib/wisdom'
 import type { HexagramReading } from '@/lib/wisdom'
 import type { Reading } from './wisdom-tabs'
 
@@ -25,16 +25,51 @@ const ENERGY_LABEL: Record<string, string> = {
 }
 
 export function KinhDichTab({ userId, initialReadings }: Props) {
-  const [question,  setQuestion]  = useState('')
-  const [reading,   setReading]   = useState<HexagramReading | null>(null)
-  const [readings,  setReadings]  = useState<Reading[]>(initialReadings)
-  const [saving,    setSaving]    = useState(false)
-  const [saved,     setSaved]     = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
+  const [question,       setQuestion]       = useState('')
+  const [reading,        setReading]        = useState<HexagramReading | null>(null)
+  const [readings,       setReadings]       = useState<Reading[]>(initialReadings)
+  const [saving,         setSaving]         = useState(false)
+  const [saved,          setSaved]          = useState(false)
+  const [showHistory,    setShowHistory]    = useState(false)
+  const [interpretation, setInterpretation] = useState<string | null>(null)
+  const [aiLoading,      setAiLoading]      = useState(false)
 
-  function handleDraw() {
-    setReading(drawHexagramByCoins(question.trim() || undefined))
+  async function handleDraw() {
+    const newReading = drawHexagramByCoins(question.trim() || undefined)
+    setReading(newReading)
     setSaved(false)
+    setInterpretation(null)
+
+    setAiLoading(true)
+    try {
+      const today   = new Date()
+      const summary = getDaySummary(today)
+      const lunar   = solarToLunarFromDate(today)
+      const res = await fetch('/api/wisdom/hexagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hexagram_num: newReading.hexagram.number,
+          nameHan:      newReading.hexagram.nameHan,
+          nameVi:       newReading.hexagram.nameVi,
+          meaning:      newReading.hexagram.meaning,
+          advice:       newReading.hexagram.advice,
+          keywords:     newReading.hexagram.keywords,
+          energy:       newReading.hexagram.energy,
+          question:     question.trim() || undefined,
+          dayCanChi:    summary.canChi.full,
+          lunarDate:    formatLunarDate(lunar),
+        }),
+      })
+      if (res.ok) {
+        const { interpretation: text } = await res.json()
+        setInterpretation(text ?? null)
+      }
+    } catch {
+      // AI unavailable — show static content only
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   async function handleSave() {
@@ -129,6 +164,24 @@ export function KinhDichTab({ userId, initialReadings }: Props) {
             <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Lời khuyên</p>
             <p className="text-sm text-indigo-800 leading-relaxed">{reading.hexagram.advice}</p>
           </div>
+
+          {/* AI Interpretation */}
+          {(aiLoading || interpretation) && (
+            <div className="bg-violet-50 rounded-xl px-3 py-3 mb-4 border border-violet-100">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Sparkles size={11} className="text-violet-400" />
+                <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-wider">Luận giải AI</p>
+              </div>
+              {aiLoading ? (
+                <div className="flex items-center gap-2 py-1">
+                  <Loader2 size={13} className="text-violet-400 animate-spin" />
+                  <p className="text-xs text-violet-400">Đang luận giải...</p>
+                </div>
+              ) : (
+                <p className="text-sm text-violet-900 leading-relaxed">{interpretation}</p>
+              )}
+            </div>
+          )}
 
           {/* Question echo */}
           {reading.question && (
