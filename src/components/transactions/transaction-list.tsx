@@ -57,10 +57,10 @@ export function TransactionList({ transactions, userId, categories }: Props) {
   const [saving, setSaving] = useState(false)
   const [filterType, setFilterType] = useState<'all' | 'expense' | 'income'>('all')
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
-  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set())
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
 
   function toggleDate(date: string) {
-    setCollapsedDates(prev => {
+    setExpandedDates(prev => {
       const next = new Set(prev)
       next.has(date) ? next.delete(date) : next.add(date)
       return next
@@ -206,7 +206,7 @@ export function TransactionList({ transactions, userId, categories }: Props) {
         const dayIncome = items.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
         const dayExpense = items.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
         const dayNet = dayIncome - dayExpense
-        const isCollapsed = collapsedDates.has(date)
+        const isCollapsed = !expandedDates.has(date)
 
         return (
           <div key={date}>
