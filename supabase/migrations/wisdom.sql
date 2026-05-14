@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS wisdom_readings (
 );
 
 ALTER TABLE wisdom_readings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "users manage own wisdom_readings" ON wisdom_readings;
 CREATE POLICY "users manage own wisdom_readings" ON wisdom_readings
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS idx_wisdom_readings_user ON wisdom_readings(user_id, created_at DESC);
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS wisdom_daily_cache (
 );
 
 ALTER TABLE wisdom_daily_cache ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "users manage own wisdom_daily_cache" ON wisdom_daily_cache;
 CREATE POLICY "users manage own wisdom_daily_cache" ON wisdom_daily_cache
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS idx_wisdom_cache_user ON wisdom_daily_cache(user_id, date DESC);

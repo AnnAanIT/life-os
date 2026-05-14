@@ -44,8 +44,9 @@ function toJDN(year: number, month: number, day: number): number {
 
 export function getDayCanChi(date: Date): { can: ThienCan; chi: DiaChi; full: string } {
   const jdn = toJDN(date.getFullYear(), date.getMonth() + 1, date.getDate())
-  const can = THIEN_CAN[jdn % 10]
-  const chi = DIA_CHI[jdn % 12]
+  // Ho Ngoc Duc offsets: +9 for can, +10 for chi
+  const can = THIEN_CAN[(jdn + 9) % 10]
+  const chi = DIA_CHI[(jdn + 10) % 12]
   return { can, chi, full: `${can} ${chi}` }
 }
 

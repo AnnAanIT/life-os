@@ -1,6 +1,23 @@
-import { Wand2 } from 'lucide-react'
+import { requireUser } from '@/lib/auth'
+import { WisdomTabs } from '@/components/wisdom/wisdom-tabs'
 
-export default function WisdomPage() {
+export default async function WisdomPage() {
+  const { user, supabase } = await requireUser()
+
+  const [{ data: profile }, { data: readings }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('birth_date, birth_hour')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('wisdom_readings')
+      .select('id, created_at, hexagram_num, question, reflection')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ])
+
   return (
     <div className="px-4 pt-12 lg:px-8 lg:pt-8 pb-8">
       <div className="mb-6">
@@ -8,15 +25,12 @@ export default function WisdomPage() {
         <p className="text-stone-400 text-sm mt-1">Tử vi · Kinh Dịch · Lịch âm</p>
       </div>
 
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-          <Wand2 size={28} className="text-indigo-400" />
-        </div>
-        <p className="text-stone-600 font-medium">Đang xây dựng</p>
-        <p className="text-stone-400 text-sm mt-1 max-w-xs">
-          Module Tuệ Giác đang được phát triển. Sẽ có Kinh Dịch, Tử vi và lịch âm dương sớm.
-        </p>
-      </div>
+      <WisdomTabs
+        userId={user.id}
+        birthDate={profile?.birth_date ?? null}
+        birthHour={profile?.birth_hour ?? null}
+        initialReadings={readings ?? []}
+      />
     </div>
   )
 }
