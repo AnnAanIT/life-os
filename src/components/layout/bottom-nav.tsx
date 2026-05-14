@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BarChart2, User, Plus, Wallet, TrendingUp, RefreshCw, CheckSquare, Target, Heart, BookOpen, Smile, Lightbulb, LayoutGrid } from 'lucide-react'
+import { Home, BarChart2, User, Plus, Wallet, TrendingUp, RefreshCw, CheckSquare, Target, Heart, BookOpen, Smile, Lightbulb, LayoutGrid, Wand2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
 
@@ -18,6 +18,7 @@ const MODULE_TABS: (Tab & { moduleId: string })[] = [
   { moduleId: 'learning',    href: '/learning',     icon: BookOpen,    label: 'Học tập' },
   { moduleId: 'spirit',      href: '/journal',      icon: Smile,       label: 'Tinh thần' },
   { moduleId: 'insights',    href: '/insights',     icon: Lightbulb,   label: 'Insights' },
+  { moduleId: 'wisdom',      href: '/wisdom',       icon: Wand2,       label: 'Tuệ Giác' },
 ]
 
 const HUB_TAB:    Tab = { href: '/modules', icon: LayoutGrid, label: 'All' }

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   DollarSign, CheckSquare, RotateCcw, TrendingUp,
   BookOpen, Heart, Sparkles, Landmark, Brain,
-  BarChart2, Moon,
+  BarChart2, Moon, Wand2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -21,6 +21,7 @@ const ALL_MODULES = [
   { id: 'learning',     name: 'Học tập',    desc: 'Sách, khóa học',         icon: BookOpen,   color: 'bg-sky-50 text-sky-600',        href: '/learning' },
   { id: 'spirit',       name: 'Tinh thần',  desc: 'Nhật ký & cảm xúc',     icon: Sparkles,   color: 'bg-rose-50 text-rose-500',      href: '/journal' },
   { id: 'insights',     name: 'Insights',   desc: 'Pattern từ dữ liệu',     icon: Brain,      color: 'bg-violet-50 text-violet-500',  href: '/insights' },
+  { id: 'wisdom',       name: 'Tuệ Giác',   desc: 'Tử vi, Kinh Dịch',       icon: Wand2,      color: 'bg-indigo-50 text-indigo-500',  href: '/wisdom' },
 ]
 
 interface Props {

@@ -6,7 +6,7 @@ import {
   Home, BarChart2, User, Plus, Sparkles,
   DollarSign, Landmark, RotateCcw, CheckSquare,
   TrendingUp, Heart, BookOpen, PenLine, Brain,
-  Zap,
+  Zap, Wand2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +26,7 @@ const MODULE_ITEMS = [
   { href: '/learning',     icon: BookOpen,    label: 'Học tập',    moduleId: 'learning' },
   { href: '/journal',      icon: PenLine,     label: 'Nhật ký',    moduleId: 'spirit' },
   { href: '/insights',     icon: Brain,       label: 'Insights',   moduleId: 'insights' },
+  { href: '/wisdom',       icon: Wand2,       label: 'Tuệ Giác',   moduleId: 'wisdom' },
 ]
 
 interface Props {
