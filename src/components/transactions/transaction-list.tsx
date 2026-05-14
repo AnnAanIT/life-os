@@ -57,6 +57,15 @@ export function TransactionList({ transactions, userId, categories }: Props) {
   const [saving, setSaving] = useState(false)
   const [filterType, setFilterType] = useState<'all' | 'expense' | 'income'>('all')
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set())
+
+  function toggleDate(date: string) {
+    setCollapsedDates(prev => {
+      const next = new Set(prev)
+      next.has(date) ? next.delete(date) : next.add(date)
+      return next
+    })
+  }
 
   const today = localDateStr()
   const expCats = expenseCategories(categories)
@@ -197,19 +206,32 @@ export function TransactionList({ transactions, userId, categories }: Props) {
         const dayIncome = items.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
         const dayExpense = items.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
         const dayNet = dayIncome - dayExpense
+        const isCollapsed = collapsedDates.has(date)
 
         return (
           <div key={date}>
-            <div className="flex items-center justify-between mb-1.5 px-1">
-              <p className="text-xs font-semibold text-stone-500 capitalize">
-                {formatDateLabel(date)}
-              </p>
+            <button
+              onClick={() => toggleDate(date)}
+              className="w-full flex items-center justify-between mb-1.5 px-1 group"
+            >
+              <div className="flex items-center gap-1.5">
+                <ChevronDown
+                  size={13}
+                  className={cn(
+                    'text-stone-400 transition-transform duration-200',
+                    isCollapsed ? '-rotate-90' : 'rotate-0'
+                  )}
+                />
+                <p className="text-xs font-semibold text-stone-500 capitalize">
+                  {formatDateLabel(date)}
+                </p>
+              </div>
               <p className={cn('text-xs font-semibold', dayNet >= 0 ? 'text-emerald-600' : 'text-red-500')}>
                 {dayNet >= 0 ? '+' : ''}{formatVND(dayNet)}
               </p>
-            </div>
+            </button>
 
-            <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden divide-y divide-stone-50">
+            {!isCollapsed && <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden divide-y divide-stone-50">
               {items.map(t => {
                 if (editingId === t.id && editData) {
                   const cats = editData.type === 'expense' ? expCats : incCats
@@ -327,7 +349,7 @@ export function TransactionList({ transactions, userId, categories }: Props) {
                   </div>
                 )
               })}
-            </div>
+            </div>}
           </div>
         )
       })}
