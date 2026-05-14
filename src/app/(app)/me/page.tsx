@@ -13,7 +13,7 @@ export default async function MePage() {
   const [{ data: profile }, { data: latestWheel }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('display_name, annual_theme, energy_peak_start, energy_peak_end, purpose_statement, life_chapter, core_values')
+      .select('display_name, annual_theme, energy_peak_start, energy_peak_end, purpose_statement, life_chapter, core_values, birth_date, birth_hour')
       .eq('id', user.id)
       .single(),
     supabase
@@ -49,6 +49,8 @@ export default async function MePage() {
             displayName={profile?.display_name       ?? null}
             energyStart={profile?.energy_peak_start  ?? null}
             energyEnd={profile?.energy_peak_end      ?? null}
+            birthDate={profile?.birth_date           ?? null}
+            birthHour={profile?.birth_hour           ?? null}
           />
           <div className="pt-1">
             <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-3">Cài đặt</p>

@@ -5,20 +5,45 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Check, Pencil } from 'lucide-react'
 
+// Địa Chi tương ứng theo giờ (mỗi 2 tiếng)
+const BIRTH_HOUR_OPTIONS = [
+  { value: 23, label: '23:00–01:00 (giờ Tý)' },
+  { value: 1,  label: '01:00–03:00 (giờ Sửu)' },
+  { value: 3,  label: '03:00–05:00 (giờ Dần)' },
+  { value: 5,  label: '05:00–07:00 (giờ Mão)' },
+  { value: 7,  label: '07:00–09:00 (giờ Thìn)' },
+  { value: 9,  label: '09:00–11:00 (giờ Tỵ)' },
+  { value: 11, label: '11:00–13:00 (giờ Ngọ)' },
+  { value: 13, label: '13:00–15:00 (giờ Mùi)' },
+  { value: 15, label: '15:00–17:00 (giờ Thân)' },
+  { value: 17, label: '17:00–19:00 (giờ Dậu)' },
+  { value: 19, label: '19:00–21:00 (giờ Tuất)' },
+  { value: 21, label: '21:00–23:00 (giờ Hợi)' },
+]
+
+function getBirthHourLabel(hour: number | null): string {
+  if (hour === null) return '—'
+  return BIRTH_HOUR_OPTIONS.find(o => o.value === hour)?.label ?? '—'
+}
+
 interface Props {
   userId:      string
   displayName: string | null
   energyStart: string | null
   energyEnd:   string | null
+  birthDate:   string | null
+  birthHour:   number | null
 }
 
-export function ProfileForm({ userId, displayName, energyStart, energyEnd }: Props) {
+export function ProfileForm({ userId, displayName, energyStart, energyEnd, birthDate, birthHour }: Props) {
   const router  = useRouter()
-  const [name,    setName]    = useState(displayName ?? '')
-  const [eStart,  setEStart]  = useState(energyStart ?? '08:00')
-  const [eEnd,    setEEnd]    = useState(energyEnd   ?? '11:00')
-  const [editing, setEditing] = useState(false)
-  const [saving,  setSaving]  = useState(false)
+  const [name,       setName]      = useState(displayName ?? '')
+  const [eStart,     setEStart]    = useState(energyStart ?? '08:00')
+  const [eEnd,       setEEnd]      = useState(energyEnd   ?? '11:00')
+  const [bDate,      setBDate]     = useState(birthDate   ?? '')
+  const [bHour,      setBHour]     = useState<string>(birthHour !== null ? String(birthHour) : '')
+  const [editing,    setEditing]   = useState(false)
+  const [saving,     setSaving]    = useState(false)
 
   async function handleSave() {
     setSaving(true)
@@ -27,6 +52,8 @@ export function ProfileForm({ userId, displayName, energyStart, energyEnd }: Pro
       display_name:      name.trim() || null,
       energy_peak_start: eStart,
       energy_peak_end:   eEnd,
+      birth_date:        bDate || null,
+      birth_hour:        bHour !== '' ? Number(bHour) : null,
       updated_at:        new Date().toISOString(),
     }).eq('id', userId)
     setSaving(false)
@@ -48,6 +75,8 @@ export function ProfileForm({ userId, displayName, energyStart, energyEnd }: Pro
         </div>
         <Row label="Tên hiển thị" value={name || '—'} />
         <Row label="Giờ vàng" value={`${eStart} – ${eEnd}`} />
+        <Row label="Ngày sinh" value={bDate ? new Date(bDate + 'T00:00:00').toLocaleDateString('vi-VN') : '—'} />
+        <Row label="Giờ sinh" value={getBirthHourLabel(birthHour)} />
       </div>
     )
   }
@@ -75,6 +104,31 @@ export function ProfileForm({ userId, displayName, energyStart, energyEnd }: Pro
           <input type="time" value={eEnd} onChange={e => setEEnd(e.target.value)}
             className="flex-1 px-3 py-2 rounded-xl border border-stone-200 text-sm outline-none focus:border-violet-400" />
         </div>
+      </div>
+
+      <div>
+        <label className="text-xs text-stone-400 block mb-1">Ngày sinh <span className="text-stone-300">(dùng cho Tử Vi)</span></label>
+        <input
+          type="date"
+          value={bDate}
+          onChange={e => setBDate(e.target.value)}
+          max={new Date().toISOString().split('T')[0]}
+          className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm outline-none focus:border-violet-400"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-stone-400 block mb-1">Giờ sinh <span className="text-stone-300">(tùy chọn, để tính chính xác hơn)</span></label>
+        <select
+          value={bHour}
+          onChange={e => setBHour(e.target.value)}
+          className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm outline-none focus:border-violet-400 bg-white"
+        >
+          <option value="">Không nhớ / Bỏ qua</option>
+          {BIRTH_HOUR_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
       </div>
 
       <div className="flex gap-2">
