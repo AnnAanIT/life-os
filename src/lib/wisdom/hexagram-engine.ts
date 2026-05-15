@@ -29,15 +29,27 @@ export function drawHexagram(question?: string): HexagramReading {
   return { hexagram, lineValues: [], movingLines: [], question, timestamp: new Date() }
 }
 
+// Traditional position names for the 6 lines (index 0 = line 1 Sơ at bottom)
+export const LINE_POSITION = ['Sơ', 'Nhị', 'Tam', 'Tứ', 'Ngũ', 'Thượng'] as const
+
 // Classic yarrow-stalk simulation: 3 coin tosses × 6 lines
 // Each coin: heads=3 (yang), tails=2 (yin)
 // Line value = sum of 3 coins: 6=old-yin, 7=young-yang, 8=young-yin, 9=old-yang
 // Lines build from bottom (line 1) to top (line 6)
 // Trigram = 3 lines; lower = lines 1-3, upper = lines 4-6
+function secureCoinToss(): 2 | 3 {
+  if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
+    const buf = new Uint8Array(1)
+    globalThis.crypto.getRandomValues(buf)
+    return buf[0] < 128 ? 2 : 3  // uniform split: 0–127 → yin(2), 128–255 → yang(3)
+  }
+  return Math.random() < 0.5 ? 2 : 3
+}
+
 function tossCoins(): 6 | 7 | 8 | 9 {
   let sum = 0
   for (let i = 0; i < 3; i++) {
-    sum += Math.random() < 0.5 ? 3 : 2
+    sum += secureCoinToss()
   }
   return sum as 6 | 7 | 8 | 9
 }

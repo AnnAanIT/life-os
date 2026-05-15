@@ -259,7 +259,8 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
 ]
 
 export function getZodiacByYear(year: number): ZodiacSign | undefined {
-  return ZODIAC_SIGNS.find(z => z.birthYears.includes(year))
+  const key = zodiacKeyFromYear(year)
+  return ZODIAC_SIGNS.find(z => z.key === key)
 }
 
 export function getZodiacByKey(key: string): ZodiacSign | undefined {

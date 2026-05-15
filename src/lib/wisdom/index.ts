@@ -15,7 +15,7 @@ export { HEXAGRAMS, getHexagram } from './hexagrams'
 export type { Hexagram } from './hexagrams'
 
 // Hexagram engine
-export { drawHexagram, drawHexagramByCoins } from './hexagram-engine'
+export { drawHexagram, drawHexagramByCoins, LINE_POSITION } from './hexagram-engine'
 export type { HexagramReading } from './hexagram-engine'
 
 // Zodiac (Tử Vi / Can Chi năm)

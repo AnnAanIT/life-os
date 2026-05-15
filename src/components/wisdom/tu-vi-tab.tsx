@@ -37,7 +37,20 @@ export function TuViTab({ birthDate, birthHour }: Props) {
   const [aiReading, setAiReading] = useState<string | null>(null)
   const [aiLoading, setAiLoading] = useState(true)
 
+  // Cache key scoped to today (Vietnam timezone) so yesterday's reading is never served
+  const cacheKey = `wisdom_daily_${new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(today)}`
+
   useEffect(() => {
+    // Return cached reading immediately if available (avoids round-trip on tab switch)
+    try {
+      const cached = sessionStorage.getItem(cacheKey)
+      if (cached) {
+        setAiReading(cached)
+        setAiLoading(false)
+        return
+      }
+    } catch { /* sessionStorage unavailable (private mode etc.) */ }
+
     const params = new URLSearchParams({
       lunarDate:  formatLunarDate(lunar),
       dayCanChi:  summary.canChi.full,
@@ -57,7 +70,12 @@ export function TuViTab({ birthDate, birthHour }: Props) {
     }
     fetch(`/api/wisdom/daily?${params}`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.content) setAiReading(d.content) })
+      .then(d => {
+        if (d?.content) {
+          setAiReading(d.content)
+          try { sessionStorage.setItem(cacheKey, d.content) } catch { /* ignore */ }
+        }
+      })
       .catch(() => {})
       .finally(() => setAiLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps

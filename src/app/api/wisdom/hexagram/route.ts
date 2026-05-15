@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+import { LINE_POSITION } from '@/lib/wisdom'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-haiku-4-5-20251001'
-
-// Traditional position names for lines 1–6
-const LINE_POSITION = ['Sơ', 'Nhị', 'Tam', 'Tứ', 'Ngũ', 'Thượng']
 
 interface RequestBody {
   hexagram_num:    number

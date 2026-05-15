@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Sparkles, BookOpen, ChevronDown, Save, Loader2, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { drawHexagramByCoins, HEXAGRAMS, getDaySummary, solarToLunarFromDate, formatLunarDate } from '@/lib/wisdom'
+import { drawHexagramByCoins, HEXAGRAMS, getDaySummary, solarToLunarFromDate, formatLunarDate, LINE_POSITION } from '@/lib/wisdom'
 import type { HexagramReading, Hexagram } from '@/lib/wisdom'
 import type { Reading } from './wisdom-tabs'
 
@@ -23,8 +23,6 @@ const ENERGY_LABEL: Record<string, string> = {
   neutral:   'Trung tính',
   caution:   'Thận trọng',
 }
-
-const LINE_POSITION = ['Sơ', 'Nhị', 'Tam', 'Tứ', 'Ngũ', 'Thượng']
 
 // ── Visual hexagram lines ─────────────────────────────────────────────────────
 function HexLines({ lineValues }: { lineValues: (6 | 7 | 8 | 9)[] }) {

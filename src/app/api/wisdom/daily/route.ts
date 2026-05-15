@@ -5,9 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-haiku-4-5-20251001'
 
-// Vietnam UTC+7
 function todayVN(): string {
-  return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date())
 }
 
 export async function GET(req: Request) {
