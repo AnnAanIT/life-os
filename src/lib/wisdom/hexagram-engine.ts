@@ -1,9 +1,12 @@
 import { HEXAGRAMS, getHexagram, type Hexagram } from './hexagrams'
 
 export interface HexagramReading {
-  hexagram: Hexagram
-  question?: string
-  timestamp: Date
+  hexagram:        Hexagram
+  lineValues:      (6 | 7 | 8 | 9)[]  // index 0 = line 1 (bottom) … index 5 = line 6 (top)
+  movingLines:     number[]            // 1-indexed positions of lines 6 or 9
+  relatedHexagram?: Hexagram           // present when movingLines.length > 0
+  question?:       string
+  timestamp:       Date
 }
 
 // Generate a random hexagram (1–64) using crypto if available, fallback to Math.random
@@ -23,7 +26,7 @@ function secureRandom64(): number {
 export function drawHexagram(question?: string): HexagramReading {
   const num = secureRandom64()
   const hexagram = getHexagram(num)!
-  return { hexagram, question, timestamp: new Date() }
+  return { hexagram, lineValues: [], movingLines: [], question, timestamp: new Date() }
 }
 
 // Classic yarrow-stalk simulation: 3 coin tosses × 6 lines
@@ -90,7 +93,26 @@ export function drawHexagramByCoins(question?: string): HexagramReading {
   const num = KING_WEN[lowerIdx]?.[upperIdx] ?? secureRandom64()
   const hexagram = getHexagram(num) ?? getHexagram(1)!
 
-  return { hexagram, question, timestamp: new Date() }
+  // Moving lines: 6 = old yin (→ yang), 9 = old yang (→ yin)
+  const movingLines = lineValues
+    .map((v, i) => (v === 6 || v === 9 ? i + 1 : 0))
+    .filter(Boolean)
+
+  // Related hexagram: flip every moving line to its opposite
+  let relatedHexagram: Hexagram | undefined
+  if (movingLines.length > 0) {
+    const relLines = lineValues.map(v => {
+      if (v === 6) return '1'  // old yin  → yang
+      if (v === 9) return '0'  // old yang → yin
+      return lineToYin(v) ? '0' : '1'
+    })
+    const relLower = relLines.slice(0, 3).join('')
+    const relUpper = relLines.slice(3, 6).join('')
+    const relNum   = KING_WEN[trigramIndex(relLower)]?.[trigramIndex(relUpper)]
+    if (relNum) relatedHexagram = getHexagram(relNum) ?? undefined
+  }
+
+  return { hexagram, lineValues, movingLines, relatedHexagram, question, timestamp: new Date() }
 }
 
 export { HEXAGRAMS }
