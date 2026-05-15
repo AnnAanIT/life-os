@@ -6,65 +6,63 @@ interface Props {
   currentHour:  number  // 0–23, server-computed (UTC+7)
 }
 
+// Module-level: built once, shared across all renders
+const CHI_RANGE: Record<string, { start: number; end: number }> = {
+  'Tý':   { start: 23, end: 1  },
+  'Sửu':  { start: 1,  end: 3  },
+  'Dần':  { start: 3,  end: 5  },
+  'Mão':  { start: 5,  end: 7  },
+  'Thìn': { start: 7,  end: 9  },
+  'Tỵ':   { start: 9,  end: 11 },
+  'Ngọ':  { start: 11, end: 13 },
+  'Mùi':  { start: 13, end: 15 },
+  'Thân': { start: 15, end: 17 },
+  'Dậu':  { start: 17, end: 19 },
+  'Tuất': { start: 19, end: 21 },
+  'Hợi':  { start: 21, end: 23 },
+}
+
 function isActive(start: number, end: number, hour: number): boolean {
-  // Giờ Tý crosses midnight: start=23, end=1
+  // Giờ Tý crosses midnight (start=23, end=1)
   if (start > end) return hour >= start || hour < end
   return hour >= start && hour < end
 }
 
 function isPast(start: number, end: number, hour: number): boolean {
-  if (start > end) return false // midnight-crossing never "past" in simple check
+  // Midnight-crossing hours: past when current hour is between end and the next start
+  // e.g. Tý (23–01): past if 01 ≤ hour < 23
+  if (start > end) return hour >= end && hour < start
   return hour >= end
+}
+
+// Hours until `start`, wrapping midnight correctly
+function hoursUntil(start: number, currentHour: number): number {
+  return start >= currentHour ? start - currentHour : 24 - currentHour + start
 }
 
 export function DayPillarCard({ summary, lunarDateStr, currentHour }: Props) {
   const { canChi, quality, luckyHours } = summary
   const isGood = quality.quality === 'hoang-dao'
 
-  // Find active lucky hour (if any)
+  // Find active lucky hour (if any) — uses module-level CHI_RANGE
   const activeChi = luckyHours.find(h => {
-    // Look up CHI_HOURS for this chi's time range
-    const chiHoursMap: Record<string, { start: number; end: number }> = {
-      'Tý':  { start: 23, end: 1  },
-      'Sửu': { start: 1,  end: 3  },
-      'Dần': { start: 3,  end: 5  },
-      'Mão': { start: 5,  end: 7  },
-      'Thìn':{ start: 7,  end: 9  },
-      'Tỵ':  { start: 9,  end: 11 },
-      'Ngọ': { start: 11, end: 13 },
-      'Mùi': { start: 13, end: 15 },
-      'Thân':{ start: 15, end: 17 },
-      'Dậu': { start: 17, end: 19 },
-      'Tuất':{ start: 19, end: 21 },
-      'Hợi': { start: 21, end: 23 },
-    }
-    const range = chiHoursMap[h.chi]
+    const range = CHI_RANGE[h.chi]
     return range ? isActive(range.start, range.end, currentHour) : false
   })
 
-  // Next upcoming lucky hour
-  const chiHoursMap: Record<string, { start: number; end: number }> = {
-    'Tý':  { start: 23, end: 1  }, 'Sửu': { start: 1,  end: 3  },
-    'Dần': { start: 3,  end: 5  }, 'Mão': { start: 5,  end: 7  },
-    'Thìn':{ start: 7,  end: 9  }, 'Tỵ':  { start: 9,  end: 11 },
-    'Ngọ': { start: 11, end: 13 }, 'Mùi': { start: 13, end: 15 },
-    'Thân':{ start: 15, end: 17 }, 'Dậu': { start: 17, end: 19 },
-    'Tuất':{ start: 19, end: 21 }, 'Hợi': { start: 21, end: 23 },
-  }
-
-  // Sort lucky hours by start time for display; mark past ones dimmed
+  // Sort: active first, then upcoming by actual time-until-start (midnight-safe), then past
   const sortedHours = luckyHours.map(h => {
-    const range = chiHoursMap[h.chi]
+    const range  = CHI_RANGE[h.chi]
     const active = range ? isActive(range.start, range.end, currentHour) : false
     const past   = range ? isPast(range.start, range.end, currentHour) : false
-    return { ...h, active, past, start: range?.start ?? 0 }
+    const until  = range ? hoursUntil(range.start, currentHour) : 99
+    return { ...h, active, past, until }
   }).sort((a, b) => {
-    // Put active first, then upcoming, then past
     if (a.active && !b.active) return -1
     if (!a.active && b.active) return 1
     if (!a.past && b.past) return -1
     if (a.past && !b.past) return 1
-    return a.start - b.start
+    return a.until - b.until  // nearest upcoming first, correctly handles midnight wrap
   })
 
   return (

@@ -58,8 +58,9 @@ const TRIGRAM_NUMBERS: Record<string, number> = {
   '110': 8, // ☱ Đoài (Lake)
 }
 
-// King Wen hexagram lookup: upper trigram (key) × lower trigram → hexagram number
-// Rows = upper, cols = lower (Kiền, Đoài, Ly, Chấn, Tốn, Khảm, Cấn, Khôn)
+// King Wen hexagram lookup: KING_WEN[lowerIdx][upperIdx] → hexagram number
+// Outer key = lower trigram index, inner key = upper trigram index
+// Index order follows TRIGRAM_ORDER: Kiền=1, Đoài=2, Ly=3, Chấn=4, Tốn=5, Khảm=6, Cấn=7, Khôn=8
 const KING_WEN: Record<number, Record<number, number>> = {
   1: { 1:1,  2:43, 3:14, 4:34, 5:9,  6:5,  7:26, 8:11 },
   2: { 1:10, 2:58, 3:38, 4:54, 5:61, 6:60, 7:41, 8:19 },
