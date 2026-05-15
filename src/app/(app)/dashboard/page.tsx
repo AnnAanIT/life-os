@@ -8,7 +8,9 @@ import { EnergyCheckIn } from '@/components/dashboard/energy-check-in'
 import { EveningCTA } from '@/components/dashboard/evening-cta'
 import { ContextZone } from '@/components/dashboard/context-zone'
 import { FinanceSummary } from '@/components/dashboard/finance-summary'
+import { DayPillarCard } from '@/components/dashboard/day-pillar'
 import { localDateStr, localMonthRange } from '@/lib/format'
+import { getDaySummary, solarToLunarFromDate, formatLunarDate } from '@/lib/wisdom'
 
 const DEFAULT_MODULES = [
   'finance','investments','habits','tasks','goals',
@@ -24,6 +26,13 @@ export default async function DashboardPage() {
 
   const enabledModules: string[] = profile?.enabled_modules ?? DEFAULT_MODULES
   const m = new Set(enabledModules)
+
+  // Compute Vietnamese calendar data server-side (UTC+7, pure math — no extra DB query)
+  const nowVN       = new Date(Date.now() + 7 * 3600 * 1000)
+  const currentHour = nowVN.getUTCHours()
+  const daySummary  = getDaySummary(new Date())
+  const lunarDate   = solarToLunarFromDate(new Date())
+  const lunarDateStr = formatLunarDate(lunarDate)
 
   const none = Promise.resolve({ data: null, error: null })
 
@@ -94,6 +103,11 @@ export default async function DashboardPage() {
             habitsTotal={m.has('habits') ? habitsTotal : undefined}
             mitRemaining={m.has('tasks') ? mitRemaining : undefined}
             happinessScore={todayScore?.score ?? null}
+          />
+          <DayPillarCard
+            summary={daySummary}
+            lunarDateStr={lunarDateStr}
+            currentHour={currentHour}
           />
           {m.has('health') && (
             <EnergyCheckIn userId={user.id} todayLog={todayEnergyLog} />
